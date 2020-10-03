@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import torch
 from PIL import Image
 from cv2 import cv2
@@ -17,7 +18,7 @@ def basic_label_to_int(basic_level):
     }[basic_level]
 
 
-def create_annotation_line_dict(root_dir, visible_path, ir_path, fine_grained_label, basic_label, unique_id, is_training,
+def create_annotation_line_dict(root_dir, visible_path, ir_path, fine_grained_label, basic_label, unique_id, is_train,
                                 is_night):
     return {
         "visible_path": os.path.join(root_dir, visible_path) if visible_path != 'null' else None,
@@ -26,7 +27,7 @@ def create_annotation_line_dict(root_dir, visible_path, ir_path, fine_grained_la
         "basic_label": basic_label,
         "basic_label_int": basic_label_to_int(basic_label),
         "unique_id": int(unique_id),
-        "is_training": bool(int(is_training)),
+        "is_train": bool(int(is_train)),
         "is_night": bool(int(is_night)),
     }
 
@@ -69,10 +70,11 @@ class VAISDataset(Dataset):
     def __getitem__(self, idx):
         if self.is_ir:
             image = cv2.imread(self.annotations[idx]['ir_path'], cv2.IMREAD_GRAYSCALE)
+            image = np.stack([image] * 3)  # duplicate the single channel three times
         else:
             image = cv2.imread(self.annotations[idx]['visible_path'])
 
-        image = torch.from_numpy(image)
+        image = Image.fromarray(image, 'RGB')
 
         if self.transform:
             image = self.transform(image)
