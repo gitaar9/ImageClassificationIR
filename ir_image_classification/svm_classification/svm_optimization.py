@@ -51,7 +51,7 @@ def svc_grid_search(X, y, nfolds=3, n_jobs=5, cv=None):
     for params, result in zip(grid_search.cv_results_['params'], grid_search.cv_results_['mean_test_score']):
         print(f"{params}: {result}")
 
-    print("\nThe best accuracy was {:.2f} using:\n{}".format(grid_search.best_score_ * 100.0, grid_search.best_params_))
+    print("\nThe best accuracy was {:.2f}% using: {}".format(grid_search.best_score_ * 100.0, grid_search.best_params_))
 
     return grid_search.best_params_, grid_search.best_score_
 
