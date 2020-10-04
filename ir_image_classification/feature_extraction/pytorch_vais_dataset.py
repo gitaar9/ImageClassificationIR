@@ -78,7 +78,6 @@ class VAISDataset(Dataset):
 
         if self.transform:
             image = self.transform(image)
-
         return image, self.annotations[idx]['basic_label_int']
 
     def show_image(self, idx):
