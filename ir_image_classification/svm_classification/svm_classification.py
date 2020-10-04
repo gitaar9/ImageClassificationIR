@@ -10,7 +10,7 @@ X_train, y_train, X_test, y_test = load_dataset(dataset_path, dataset_name)
 
 # Create a svm Classifier
 clf = svm.SVC(
-    C=20,
+    C=1,
     degree=3,
     gamma=0.1,
     kernel='poly'

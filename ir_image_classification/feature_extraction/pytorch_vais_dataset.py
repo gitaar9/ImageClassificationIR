@@ -81,5 +81,5 @@ class VAISDataset(Dataset):
         return image, self.annotations[idx]['basic_label_int']
 
     def show_image(self, idx):
-        img = Image.fromarray(self[idx][0], 'L' if self.is_ir else 'RGB')
+        img = Image.fromarray(self[idx][0], 'RGB')
         img.show()
