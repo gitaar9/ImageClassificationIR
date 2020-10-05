@@ -1,7 +1,6 @@
 import os
 
 import numpy as np
-import torch
 from PIL import Image
 from cv2 import cv2
 from torch.utils.data import Dataset
@@ -37,10 +36,11 @@ class VAISDataset(Dataset):
 
     def __init__(self, root_dir, is_train=None, is_night=None, is_ir=True, transform=None):
         """
-        Args:
-            root_dir (string): Directory with all the images.
-            transform (callable, optional): Optional transform to be applied
-                on a sample.
+        :param root_dir: The root directory of the VAIS dataset (where the annotations.txt file is)
+        :param is_train: When this is true only training images are loaded (Can be True, False and None)
+        :param is_night: When this is true only night images are loaded (Can be True, False and None)
+        :param is_ir: When this is true only infrared images are loaded otherwise we load the RGB images
+        :param transform: The transform that should be applied to every image
         """
         self.root_dir = root_dir
         self.transform = transform

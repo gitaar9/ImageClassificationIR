@@ -6,8 +6,9 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
 
-from ir_image_classification.feature_extraction.feature_extracting_pretrained_resnets import feature_extracting_resnet50
-from ir_image_classification.feature_extraction.pytorch_vais_dataset import VAISDataset
+from ir_image_classification.feature_extraction.pytorch.feature_extracting_pretrained_resnets import \
+    feature_extracting_resnet152
+from ir_image_classification.feature_extraction.pytorch.pytorch_vais_dataset import VAISDataset
 
 
 def get_dataloader(batch_size=20, *args, **kwargs):
@@ -25,7 +26,7 @@ def get_dataloader(batch_size=20, *args, **kwargs):
 
 
 def get_resnet_model(device):
-    resnet = feature_extracting_resnet50(pretrained=True)
+    resnet = feature_extracting_resnet152(pretrained=True)
     resnet.to(device)
     resnet.eval()
     return resnet
@@ -54,8 +55,7 @@ def save_features_as_npy_files(features, labels, name):
 
 def main():
     """
-    Creates a set of .npy files that can serve as a dataset
-    :return:
+    Creates a set of .npy files that can serve as a dataset for the SVM classification
     """
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
@@ -63,13 +63,13 @@ def main():
     resnet_model = get_resnet_model(device)
 
     for set in ['train', 'test']:
-        dataloader = get_dataloader(batch_size=10, is_train=(set == "train"), is_ir=False)
+        dataloader = get_dataloader(batch_size=10, is_train=(set == "train"), is_ir=True)
         features, labels = get_features(resnet_model, dataloader, device)
 
         # Save the feature dataset as npy file
-        output_dataset_name = f"resnet50_224px_RGB_{set}"
-        root_extracted_datset_dir = "/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets"
-        save_features_as_npy_files(features, labels, os.path.join(root_extracted_datset_dir, output_dataset_name))
+        output_dataset_name = f"resnet152_224px_{set}"
+        root_extracted_dataset_dir = "/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets"
+        save_features_as_npy_files(features, labels, os.path.join(root_extracted_dataset_dir, output_dataset_name))
 
 
 if __name__ == "__main__":

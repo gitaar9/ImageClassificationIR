@@ -79,11 +79,17 @@ def main():
     # dataset_name = "resnet50_224px_normalized_between_0_1"
     # dataset_name = "resnet50_224px_relu"
     # dataset_name = "resnet50_224px"
-    dataset_name = "resnet50_224px_RGB"
+    # dataset_name = "resnet50_224px_RGB"
     # dataset_name = "resnet50_112px"
     # dataset_name = "resnet50_56px"
     # dataset_name = "resnet50_28px"
     # dataset_name = "resnet50_no_scaling"
+
+    # dataset_name = "resnet152_224px_RGB"  # 83.20% using: {'C': 0.001, 'degree': 1, 'gamma': 1.0, 'kernel': 'poly'}
+    # dataset_name = "resnet152_224px"  # 47.23% using: {'C': 10.0, 'degree': 0, 'gamma': 0.001, 'kernel': 'rbf'}
+    # dataset_name = "keras_resnet152v2_224px"  # 50.78% using: {'C': 0.001, 'degree': 1, 'gamma': 1.0, 'kernel': 'poly'}
+    # dataset_name = "keras_resnet152v2_224px_RGB"  # 84.80% using: {'C': 0.001, 'degree': 1, 'gamma': 1.0, 'kernel': 'poly'}
+    dataset_name = "keras_resnet152_224px"  # 47.23% using: {'C': 10.0, 'degree': 0, 'gamma': 0.001, 'kernel': 'rbf'}
 
     dataset_path = '/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets'
     X_train, y_train, X_test, y_test = load_dataset(dataset_path, dataset_name)
