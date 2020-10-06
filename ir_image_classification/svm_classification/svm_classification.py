@@ -2,7 +2,6 @@ from sklearn import svm, metrics
 
 from ir_image_classification.svm_classification.svm_optimization import load_dataset
 
-
 # Load data
 dataset_name = "resnet50_224px"
 dataset_path = '/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets'
