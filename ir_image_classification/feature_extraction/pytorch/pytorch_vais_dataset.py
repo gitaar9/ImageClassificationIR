@@ -6,7 +6,7 @@ from cv2 import cv2
 from torch.utils.data import Dataset
 
 
-def basic_label_to_int(basic_level):
+def basic_label_to_int(basic_level: str) -> int:
     return {
         "small": 0,
         "passenger": 1,
@@ -17,8 +17,14 @@ def basic_label_to_int(basic_level):
     }[basic_level]
 
 
-def create_annotation_line_dict(root_dir, visible_path, ir_path, fine_grained_label, basic_label, unique_id, is_train,
-                                is_night):
+def create_annotation_line_dict(root_dir: str,
+                                visible_path: str,
+                                ir_path: str,
+                                fine_grained_label: str,
+                                basic_label: str,
+                                unique_id: str,
+                                is_train: str,
+                                is_night: str) -> dict:
     return {
         "visible_path": os.path.join(root_dir, visible_path) if visible_path != 'null' else None,
         "ir_path": os.path.join(root_dir, ir_path) if ir_path != 'null' else None,
@@ -34,7 +40,14 @@ def create_annotation_line_dict(root_dir, visible_path, ir_path, fine_grained_la
 class VAISDataset(Dataset):
     """VAIS dataset."""
 
-    def __init__(self, root_dir, is_train=None, is_night=None, is_ir=True, transform=None):
+    # Preprocessing methods
+    NONE = 0
+    INVERT_EQUALIZE = 1
+    THREE_CHANNEL_NONE_INVERT_EQUALIZE = 2
+    INVERT = 3
+    EQUALIZE = 4
+
+    def __init__(self, root_dir, is_train=None, is_night=None, is_ir=True, transform=None, preprocessing_method=0):
         """
         :param root_dir: The root directory of the VAIS dataset (where the annotations.txt file is)
         :param is_train: When this is true only training images are loaded (Can be True, False and None)
@@ -47,6 +60,7 @@ class VAISDataset(Dataset):
         self.is_ir = is_ir
         self.is_train = is_train
         self.is_night = is_night
+        self.preprocessing_method = preprocessing_method
 
         # Read in annotations
         with open(os.path.join(root_dir, 'annotations.txt')) as f:
@@ -67,10 +81,25 @@ class VAISDataset(Dataset):
     def __len__(self):
         return len(self.annotations)
 
+    def preprocess_ir_image(self, image: np.array) -> np.array:
+        if self.preprocessing_method == self.NONE:
+            channels = [image] * 3
+        elif self.preprocessing_method == self.INVERT_EQUALIZE:
+            channels = [cv2.equalizeHist(np.invert(image))] * 3
+        elif self.preprocessing_method == self.THREE_CHANNEL_NONE_INVERT_EQUALIZE:
+            channels = [image, np.invert(image), cv2.equalizeHist(image)]
+        elif self.preprocessing_method == self.INVERT:
+            channels = [np.invert(image)] * 3
+        elif self.preprocessing_method == self.EQUALIZE:
+            channels = [cv2.equalizeHist(image)] * 3
+        else:
+            raise ValueError("Unknown preprocessing type")
+        return np.stack(channels, axis=2)
+
     def __getitem__(self, idx):
         if self.is_ir:
             image = cv2.imread(self.annotations[idx]['ir_path'], cv2.IMREAD_GRAYSCALE)
-            image = np.stack([image] * 3)  # duplicate the single channel three times
+            image = self.preprocess_ir_image(image)
         else:
             image = cv2.imread(self.annotations[idx]['visible_path'])
 
@@ -80,6 +109,11 @@ class VAISDataset(Dataset):
             image = self.transform(image)
         return image, self.annotations[idx]['basic_label_int']
 
-    def show_image(self, idx):
-        img = Image.fromarray(self[idx][0], 'RGB')
-        img.show()
+    def show_image(self, idx, individual_channels_as_imgs=False):
+        if individual_channels_as_imgs:
+            array_of_image = np.asarray(self[idx][0])
+            Image.fromarray(array_of_image[:, :, 0], 'L').show()
+            Image.fromarray(array_of_image[:, :, 1], 'L').show()
+            Image.fromarray(array_of_image[:, :, 2], 'L').show()
+        else:
+            self[idx][0].show()

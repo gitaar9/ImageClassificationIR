@@ -1,6 +1,6 @@
 import torch
-from torchvision.models.resnet import Bottleneck, ResNet, model_urls
 from torch.hub import load_state_dict_from_url
+from torchvision.models.resnet import Bottleneck, ResNet, model_urls
 
 
 class FeatureExtractingResNet(ResNet):
