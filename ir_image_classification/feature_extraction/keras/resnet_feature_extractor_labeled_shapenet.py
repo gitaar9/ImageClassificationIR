@@ -5,7 +5,7 @@ from tensorflow.python.keras.applications.resnet import ResNet152
 from tensorflow.python.keras.applications.resnet_v2 import ResNet152V2
 from torchvision.transforms import transforms
 
-from ir_image_classification.feature_extraction.pytorch.pytorch_marvel_dataset import MARVELDataset
+from ir_image_classification.feature_extraction.pytorch.pytorch_labeled_shapenet_dataset import LabeledShapeNetDataset
 from ir_image_classification.feature_extraction.pytorch.resnet_feature_extractor import save_features_as_npy_files
 
 
@@ -56,46 +56,30 @@ def main():
 
     # Directories and names of the extracted dataset
     root_extracted_dataset_dir = "/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets"
-    output_dataset_name = f"MARVEL_keras_{cnn_class.__name__}_224px"
+    output_dataset_name = f"labeled_shapenet_keras_{cnn_class.__name__}_224px"
     print(f"Saving the extracted dataset as: {output_dataset_name}")
 
     # Load data
-    root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
     image_transform = transforms.Compose([
         transforms.Resize((224, 224), interpolation=PIL.Image.BICUBIC)
     ])
 
     batch_size = 100
 
-    # train_ds = MARVELDataset(root_dir=root_dir, transform=image_transform, is_train=True)
-    # train_features = []
-    # train_labels = []
-    # for idx in range(0, len(train_ds), batch_size):
-    #     print(idx)
-    #     data, labels = pytorch_dataset_to_np_arrays(train_ds, idx, idx + batch_size)
-    #     features = model.predict(data)
-    #     train_features.append(features)
-    #     train_labels.extend(labels)
-    # train_features = np.concatenate(train_features, axis=0)
-    # train_labels = np.asarray(train_labels)
-    # print(train_features.shape)
-    # print(train_labels.shape)
-    # save_features_as_npy_files(train_features, train_labels, root_extracted_dataset_dir, output_dataset_name, 'train')
-
-    test_ds = MARVELDataset(root_dir=root_dir, transform=image_transform, is_train=False)
-    test_features = []
-    test_labels = []
-    for idx in range(0, len(test_ds), batch_size):
+    train_ds = LabeledShapeNetDataset(image_transform)
+    train_features = []
+    train_labels = []
+    for idx in range(0, len(train_ds), batch_size):
         print(idx)
-        data, labels = pytorch_dataset_to_np_arrays(test_ds, idx, idx + batch_size)
+        data, labels = pytorch_dataset_to_np_arrays(train_ds, idx, idx + batch_size)
         features = model.predict(data)
-        test_features.append(features)
-        test_labels.extend(labels)
-    test_features = np.concatenate(test_features, axis=0)
-    test_labels = np.asarray(test_labels)
-    print(test_features.shape)
-    print(test_labels.shape)
-    save_features_as_npy_files(test_features, test_labels, root_extracted_dataset_dir, output_dataset_name, 'test')
+        train_features.append(features)
+        train_labels.extend(labels)
+    train_features = np.concatenate(train_features, axis=0)
+    train_labels = np.asarray(train_labels)
+    print(train_features.shape)
+    print(train_labels.shape)
+    save_features_as_npy_files(train_features, train_labels, root_extracted_dataset_dir, output_dataset_name, 'train')
 
 
 if __name__ == "__main__":
