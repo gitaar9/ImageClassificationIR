@@ -9,11 +9,11 @@ from sklearn.preprocessing import MinMaxScaler
 from skopt import BayesSearchCV
 
 
-def load_dataset(dataset_path, normalize=False):
-    X_train = np.load(os.path.join(dataset_path, f"train_features.npy"))
-    y_train = np.load(os.path.join(dataset_path, f"train_labels.npy"))
-    X_test = np.load(os.path.join(dataset_path, f"test_features.npy"))
-    y_test = np.load(os.path.join(dataset_path, f"test_labels.npy"))
+def load_dataset(dataset_path, normalize=False, name=""):
+    X_train = np.load(os.path.join(dataset_path, f"{name}_train_features.npy"))
+    y_train = np.load(os.path.join(dataset_path, f"{name}_train_labels.npy"))
+    X_test = np.load(os.path.join(dataset_path, f"{name}_test_features.npy"))
+    y_test = np.load(os.path.join(dataset_path, f"{name}_test_labels.npy"))
 
     if normalize:
         scaler = MinMaxScaler()

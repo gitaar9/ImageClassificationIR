@@ -22,7 +22,7 @@ from ir_image_classification.data_visualization.util import load_data, data_to_d
 # X, y = load_data(dataset_path)
 
 dataset_path = '/home/gitaar9/AI/TNO/Pix2VoxPP'
-X, y = load_data_3d_features(dataset_path, "gt")
+X, y = load_data_3d_features(dataset_path, "finetune_250_train")
 
 print(np.max(y))  # Amount of colors for the plots
 print(X.shape)
@@ -61,7 +61,7 @@ plt.figure(figsize=(20, 12))
 sns.scatterplot(
     x="tsne-2d-one", y="tsne-2d-two",
     hue="label",
-    palette=sns.color_palette("hls", 10),
+    palette=sns.color_palette("hls", 26),
     data=df_subset,
     legend="full",
     alpha=.5,

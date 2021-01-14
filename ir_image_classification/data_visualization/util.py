@@ -65,7 +65,7 @@ def data_to_df(X, y):
     feat_cols = ['feature ' + str(i) for i in range(X.shape[1])]
     df = pd.DataFrame(X, columns=feat_cols)
     df['y'] = y
-    df['label'] = df['y'].apply(lambda i: shapenet_int_label_to_string(i))
+    df['label'] = df['y'].apply(lambda i: marvel_int_label_to_string(i))
     return df, feat_cols
 
 

@@ -16,15 +16,14 @@ from ir_image_classification.svm_classification.svm_optimization import load_dat
 dataset_path = '/home/gitaar9/AI/TNO/Pix2VoxPP'
 normalize = True
 
-X_train, y_train, X_test, y_test = load_dataset(dataset_path, normalize=normalize)
-
+X_train, y_train, X_test, y_test = load_dataset(dataset_path, normalize=normalize, name="finetune_250")
 
 
 # Shuffle the dataset
 rndperm = get_random_permutation(X_train.shape[0])
 
 # Take only 30000 samples
-N = 20000
+N = 5000
 print(X_train.shape, y_train.shape)
 X_train_subset = X_train[rndperm][:N].copy()
 y_train_subset = y_train[rndperm][:N].copy()
