@@ -1,10 +1,7 @@
 import glob
 import os
 
-import numpy as np
-from PIL import Image
-from cv2 import cv2
-from torch.utils.data import Dataset
+import pandas as pd
 
 
 def create_annotation_line_dict(image_id: str,
@@ -19,7 +16,7 @@ def create_annotation_line_dict(image_id: str,
     }
 
 
-class MARVELDataset(Dataset):
+class MARVELDataset:
     """MARVEL dataset."""
 
     def __init__(self, root_dir, is_train=True, transform=None):
@@ -59,21 +56,53 @@ class MARVELDataset(Dataset):
     def __len__(self):
         return len(self.images_paths)
 
-    def __getitem__(self, idx):
-        image_path = self.images_paths[idx]
-        image_id = image_path.split('/')[-1][:-4]
+    def get_labels(self):
+        labels = []
+        for p in self.images_paths:
+            image_id = p.split('/')[-1][:-4]
+            labels.append(str(self.annotations[image_id]['class_label']))
+        return labels
 
-        image = cv2.imread(self.images_paths[idx])
-        image = Image.fromarray(image, 'RGB')
+    def get_dataframe(self):
+        paths = self.images_paths
+        labels = self.get_labels()
+        return pd.DataFrame({'paths': paths, 'labels': labels})
 
-        if self.transform:
-            image = self.transform(image)
 
-        return image, self.annotations[image_id]['class_label']
-
-    def show_image(self, idx):
-        image_path = self.images_paths[idx]
-        image_id = image_path.split('/')[-1][:-4]
-        print(f'Label of shown image is {self.annotations[image_id]["class_label_name"]}'
-              f'({self.annotations[image_id]["class_label"]})')
-        self[idx][0].show()
+# train_ds = MARVELDataset('/home/gitaar9/AI/TNO/marveldataset2016/')
+# test_ds = MARVELDataset('/home/gitaar9/AI/TNO/marveldataset2016/', is_train=False)
+#
+# train_df = train_ds.get_dataframe()
+# print(train_df)
+# datagen = ImageDataGenerator(
+#     shear_range=0.2,
+#     zoom_range=0.2,
+#     horizontal_flip=True,
+#     preprocessing_function=tf.keras.applications.resnet.preprocess_input
+# )
+#
+# train_generator = datagen.flow_from_dataframe(
+#     dataframe=train_df,
+#     directory=None,
+#     x_col="paths",
+#     y_col="labels",
+#     subset="training",
+#     batch_size=32,
+#     seed=42,
+#     shuffle=False,
+#     class_mode="categorical",
+#     target_size=(224, 224),
+# )
+#
+# # train =
+#
+# # print(len(train))
+# print(len(train_generator))
+# for batch_images, batch_labels in train_generator:
+#     print(batch_images.shape)
+#     for i in range(3):
+#         a = batch_images[i]
+#         a = np.interp(a, (a.min(), a.max()), (0, 255))
+#         image = Image.fromarray(a.astype(np.uint8), 'RGB')
+#         image.show()
+#     break
