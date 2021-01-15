@@ -77,7 +77,8 @@ def build_datasets(root_dir, batch_size=32):
 
 def main():
     # Load the data
-    root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
+    # root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
+    root_dir = '/data/s2576597/MARVEL/'
     train_generator, test_generator = build_datasets(root_dir, batch_size=40)
 
     # CREATE THE MODEL
