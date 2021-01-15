@@ -6,34 +6,6 @@ from tensorflow.python.keras.applications.resnet import ResNet152
 from ir_image_classification.feature_extraction.keras.keras_dataset import MARVELDataset
 
 
-def build_resnet152():
-    """
-    Loads a pretrained ResNet model and removes the dense layer, adds the standard preprocessing and returns the two
-    as a pipeline.
-    """
-    # load pretrained model without head
-    base_model = ResNet152(
-        include_top=True,
-        weights="imagenet",
-        pooling=None,
-        input_tensor=Input(shape=(224, 224, 3))
-    )
-
-    # Freeze the base_model
-    base_model.trainable = False
-
-    # Create a new head model
-    head_model = base_model.output
-    head_model = tf.keras.layers.GlobalAveragePooling2D(name='avg_pool')(head_model)
-    outputs = tf.keras.layers.Dense(26, activation='softmax', name='predictions')(head_model)
-
-    # Combine the whole thing
-    model = tf.keras.Model(base_model.inputs, outputs)
-    model.summary()
-
-    return model
-
-
 def build_datasets(root_dir, batch_size=32):
     train_ds = MARVELDataset(root_dir)
     test_ds = MARVELDataset(root_dir, is_train=False)
@@ -82,7 +54,6 @@ def main():
     train_generator, test_generator = build_datasets(root_dir, batch_size=40)
 
     # CREATE THE MODEL
-
     # load pretrained model without head
     base_model = ResNet152(
         include_top=False,
@@ -110,6 +81,7 @@ def main():
         metrics=[tf.keras.metrics.Accuracy()],
     )
 
+    # TRAINING PART
     # Train the head model
     epochs = 50
     model.fit(
@@ -128,7 +100,7 @@ def main():
         metrics=[tf.keras.metrics.Accuracy()],
     )
     final_epochs = 25
-    model.fit(train_generator, epochs=epochs, validation_data=test_generator)
+    model.fit(train_generator, epochs=final_epochs, validation_data=test_generator)
 
 
 if __name__ == "__main__":
