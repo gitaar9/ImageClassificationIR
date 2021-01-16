@@ -51,7 +51,7 @@ def main():
     # Load the data
     # root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
     root_dir = '/data/s2576597/MARVEL/'
-    train_generator, test_generator = build_datasets(root_dir, batch_size=40)
+    train_generator, test_generator = build_datasets(root_dir, batch_size=100)
 
     # CREATE THE MODEL
     # load pretrained model without head
@@ -78,12 +78,12 @@ def main():
     model.compile(
         optimizer=tf.keras.optimizers.Adam(),
         loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
-        metrics=[tf.keras.metrics.Accuracy()],
+        metrics=[tf.keras.metrics.CategoricalAccuracy()],
     )
 
     # TRAINING PART
     # Train the head model
-    epochs = 50
+    epochs = 25
     model.fit(
         train_generator,
         # steps_per_epoch=2000,
@@ -97,9 +97,9 @@ def main():
     model.compile(
         optimizer=tf.keras.optimizers.Adam(1e-5),
         loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
-        metrics=[tf.keras.metrics.Accuracy()],
+        metrics=[tf.keras.metrics.CategoricalAccuracy()],
     )
-    final_epochs = 25
+    final_epochs = 10
     model.fit(train_generator, epochs=final_epochs, validation_data=test_generator)
 
 
