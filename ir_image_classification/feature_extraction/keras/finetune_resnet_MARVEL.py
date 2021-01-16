@@ -1,9 +1,39 @@
+import datetime
+
+import matplotlib
 import tensorflow as tf
 from keras_preprocessing.image import ImageDataGenerator
 from tensorflow.python.keras import Input
 from tensorflow.python.keras.applications.resnet import ResNet152
 
 from ir_image_classification.feature_extraction.keras.keras_dataset import MARVELDataset
+
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+
+def create_training_validation_plots(head_history, final_history, plot_name):
+    amount_of_epochs = len(head_history['loss'] + final_history['loss'])
+
+    # summarize history for accuracy
+    plt.plot(head_history['categorical_accuracy'] + final_history['categorical_accuracy'])
+    plt.plot(head_history['val_categorical_accuracy'] + final_history['val_categorical_accuracy'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.xticks(range(amount_of_epochs))
+    plt.savefig(f"{plot_name}_acc.png")
+
+    # summarize history for loss
+    plt.plot(head_history['loss'] + final_history['loss'])
+    plt.plot(head_history['val_loss'] + final_history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.xticks(range(amount_of_epochs))
+    plt.savefig(f"{plot_name}_loss.png")
 
 
 def build_datasets(root_dir, batch_size=32):
@@ -22,7 +52,6 @@ def build_datasets(root_dir, batch_size=32):
         directory=None,
         x_col="paths",
         y_col="labels",
-        subset="training",
         batch_size=batch_size,
         seed=42,
         shuffle=True,
@@ -36,7 +65,6 @@ def build_datasets(root_dir, batch_size=32):
         directory=None,
         x_col="paths",
         y_col="labels",
-        subset="validation",
         batch_size=batch_size,
         seed=42,
         shuffle=False,
@@ -83,13 +111,11 @@ def main():
 
     # TRAINING PART
     # Train the head model
-    epochs = 25
-    model.fit(
+    epochs = 10
+    head_training_history = model.fit(
         train_generator,
-        # steps_per_epoch=2000,
         epochs=epochs,
         validation_data=test_generator,
-        # validation_steps=800
     )
 
     # Train the model as a whole for bit more
@@ -99,12 +125,14 @@ def main():
         loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
         metrics=[tf.keras.metrics.CategoricalAccuracy()],
     )
-    final_epochs = 10
-    model.fit(train_generator, epochs=final_epochs, validation_data=test_generator)
+    final_epochs = 5
+    final_training_history = model.fit(train_generator, epochs=final_epochs, validation_data=test_generator)
+
+    # Create some final plots and save the model
+    result_name = f"output/finetuned_{epochs}_{final_epochs}_{datetime.datetime.now().isoformat()}"
+    create_training_validation_plots(head_training_history.history, final_training_history.history, result_name)
+    model.save(result_name)
 
 
 if __name__ == "__main__":
     main()
-
-
-
