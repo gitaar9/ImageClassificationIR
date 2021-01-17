@@ -24,6 +24,7 @@ def create_training_validation_plots(head_history, final_history, plot_name):
     plt.legend(['train', 'test'], loc='upper left')
     plt.xticks(range(amount_of_epochs))
     plt.savefig(f"{plot_name}_acc.png")
+    plt.clf()
 
     # summarize history for loss
     plt.plot(head_history['loss'] + final_history['loss'])
@@ -34,6 +35,7 @@ def create_training_validation_plots(head_history, final_history, plot_name):
     plt.legend(['train', 'test'], loc='upper left')
     plt.xticks(range(amount_of_epochs))
     plt.savefig(f"{plot_name}_loss.png")
+    plt.clf()
 
 
 def build_datasets(root_dir, batch_size=32):
@@ -43,6 +45,7 @@ def build_datasets(root_dir, batch_size=32):
         shear_range=0.2,
         zoom_range=0.2,
         horizontal_flip=True,
+        rotation_range=5,
         preprocessing_function=tf.keras.applications.resnet.preprocess_input
     )
 
@@ -125,7 +128,7 @@ def main():
         loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
         metrics=[tf.keras.metrics.CategoricalAccuracy()],
     )
-    final_epochs = 5
+    final_epochs = 10
     final_training_history = model.fit(train_generator, epochs=final_epochs, validation_data=test_generator)
 
     # Create some final plots and save the model

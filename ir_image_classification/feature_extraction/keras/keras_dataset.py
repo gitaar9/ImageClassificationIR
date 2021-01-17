@@ -1,8 +1,10 @@
 import glob
 import os
-
+import tensorflow as tf
 import pandas as pd
-
+from PIL import Image
+from keras_preprocessing.image import ImageDataGenerator
+import numpy as np
 
 def create_annotation_line_dict(image_id: str,
                                 set_index: str,
@@ -78,6 +80,7 @@ class MARVELDataset:
 #     shear_range=0.2,
 #     zoom_range=0.2,
 #     horizontal_flip=True,
+#     rotation_range=3,
 #     preprocessing_function=tf.keras.applications.resnet.preprocess_input
 # )
 #
@@ -94,10 +97,6 @@ class MARVELDataset:
 #     target_size=(224, 224),
 # )
 #
-# # train =
-#
-# # print(len(train))
-# print(len(train_generator))
 # for batch_images, batch_labels in train_generator:
 #     print(batch_images.shape)
 #     for i in range(3):

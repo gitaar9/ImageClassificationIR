@@ -22,7 +22,7 @@ from ir_image_classification.data_visualization.util import load_data, data_to_d
 # X, y = load_data(dataset_path)
 
 dataset_path = '/home/gitaar9/AI/TNO/Pix2VoxPP'
-X, y = load_data_3d_features(dataset_path, "finetune_250_train")
+X, y = load_data_3d_features(dataset_path, "with_random_bg_scratch_early_features_subset_train")
 
 print(np.max(y))  # Amount of colors for the plots
 print(X.shape)
