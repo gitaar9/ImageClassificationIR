@@ -112,7 +112,7 @@ def main():
 
     # TRAINING PART
     # Train the head model
-    epochs = 10
+    epochs = 20  # 10
     head_training_history = model.fit(
         train_generator,
         epochs=epochs,
@@ -126,7 +126,7 @@ def main():
         loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
         metrics=[tf.keras.metrics.CategoricalAccuracy()],
     )
-    final_epochs = 10
+    final_epochs = 20  # 10
     final_training_history = model.fit(train_generator, epochs=final_epochs, validation_data=test_generator)
 
     # Create some final plots and save the model
