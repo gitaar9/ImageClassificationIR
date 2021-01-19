@@ -1,81 +1,96 @@
 import glob
 import os
-import tensorflow as tf
+
+import numpy as np
 import pandas as pd
+import tensorflow as tf
 from PIL import Image
 from keras_preprocessing.image import ImageDataGenerator
-import numpy as np
 
-def create_annotation_line_dict(image_id: str,
-                                set_index: str,
-                                class_label: str,
-                                class_label_name: str) -> dict:
-    return {
-        "image_id": image_id,
-        "is_train": True if set_index == '1' else False,
-        "class_label": int(class_label),
-        "class_label_name": class_label_name,
+
+classes = ['Container Ship', 'Bulk Carrier', 'Passengers Ship', 'Ro-ro/passenger Ship', 'Ro-ro Cargo', 'Tug',
+           'Vehicles Carrier', 'Reefer', 'Yacht', 'Sailing Vessel', 'Heavy Load Carrier', 'Wood Chips Carrier',
+           'Livestock Carrier', 'Fire Fighting Vessel', 'Patrol Vessel', 'Platform', 'Standby Safety Vessel',
+           'Combat Vessel', 'Training Ship', 'Icebreaker', 'Replenishment Vessel', 'Tankers', 'Fishing Vessels',
+           'Supply Vessels', 'Carrier/Floating', 'Dredgers']
+
+
+def df_to_histogram(df):
+    hist = {}
+    for (_, image_path, label) in df.itertuples(name=None):
+        if label in hist:
+            hist[label] += 1
+        else:
+            hist[label] = 1
+    return hist
+
+
+def limit_to_max_per_class(df, max_per_class):
+    class_hist = {}
+    new_df = pd.DataFrame({'paths': [], 'labels': []})
+    for (_, image_path, label) in df.itertuples(name=None):
+        if label in class_hist:
+            class_hist[label] += 1
+        else:
+            class_hist[label] = 1
+        if class_hist[label] < (max_per_class + 1):
+            new_df = new_df.append({'paths': image_path, 'labels': label}, ignore_index=True)
+    return new_df
+
+
+def valid_image_paths_and_filtered_annotations(root_dir, is_train):
+    images_paths = [path for path in glob.glob(os.path.join(root_dir, 'W*_1/*.jpg'))]
+    print(f'Found {len(images_paths)} MARVEL images.')
+
+    # Read in annotations
+    with open(os.path.join(root_dir, 'VesselClassification.dat')) as f:
+        annotations = [line.strip().split(",") for line in f.readlines()]
+    annotations = {
+        image_id: {
+            "is_train": True if set_index == '1' else False,
+            "class_label": int(class_label),
+            "class_label_name": class_label_name,
+        } for image_id, set_index, class_label, class_label_name in annotations
     }
 
+    # Remove annotations of not downloaded images + filter based on train/test set
+    image_ids = {p.split('/')[-1][:-4] for p in images_paths}
+    annotations = {
+        key: value for key, value in annotations.items() if key in image_ids and value['is_train'] == is_train
+    }
 
-class MARVELDataset:
-    """MARVEL dataset."""
+    # Filter image paths based on annotations
+    images_paths = [p for p in images_paths if p.split('/')[-1][:-4] in annotations.keys()]
+    print(f'{len(images_paths)} MARVEL images were loaded.')
 
-    def __init__(self, root_dir, is_train=True, transform=None):
-        """
-        :param root_dir: The root directory of the MARVEL dataset (where the annotations.txt file is)
-        :param is_train: When this is true only training images are loaded (Can be True, False)
-        :param transform: The transform that should be applied to every image
-        """
-        self.root_dir = root_dir
-        self.transform = transform
-
-        # Retrieve all images paths
-        self.images_paths = [path for path in glob.glob(os.path.join(root_dir, 'W*_1/*.jpg'))]
-        print(f'Found {len(self.images_paths)} MARVEL images.')
-
-        # Read in annotations
-        with open(os.path.join(root_dir, 'VesselClassification.dat')) as f:
-            self.annotations = [line.strip().split(",") for line in f.readlines()]
-        self.annotations = {
-            image_id: {
-                "is_train": True if set_index == '1' else False,
-                "class_label": int(class_label),
-                "class_label_name": class_label_name,
-            } for image_id, set_index, class_label, class_label_name in self.annotations
-        }
-
-        # Remove annotations of not downloaded images + filter based on train/test set
-        image_ids = {p.split('/')[-1][:-4] for p in self.images_paths}
-        self.annotations = {
-            key: value for key, value in self.annotations.items() if key in image_ids and value['is_train'] == is_train
-        }
-
-        # Filter image paths based on annotations
-        self.images_paths = [p for p in self.images_paths if p.split('/')[-1][:-4] in self.annotations.keys()]
-        print(f'{len(self.images_paths)} MARVEL images were loaded.')
-
-    def __len__(self):
-        return len(self.images_paths)
-
-    def get_labels(self):
-        labels = []
-        for p in self.images_paths:
-            image_id = p.split('/')[-1][:-4]
-            labels.append(str(self.annotations[image_id]['class_label']))
-        return labels
-
-    def get_dataframe(self):
-        paths = self.images_paths
-        labels = self.get_labels()
-        return pd.DataFrame({'paths': paths, 'labels': labels})
+    return images_paths, annotations
 
 
-# train_ds = MARVELDataset('/home/gitaar9/AI/TNO/marveldataset2016/')
-# test_ds = MARVELDataset('/home/gitaar9/AI/TNO/marveldataset2016/', is_train=False)
+def marvel_dataframe(root_dir, is_train=True, cast_labels_to=str, max_images_per_class=None):
+    image_paths, annotations = valid_image_paths_and_filtered_annotations(root_dir, is_train)
+
+    # Retrieve labels from the annotation in the order of image_paths
+    labels = []
+    for p in image_paths:
+        image_id = p.split('/')[-1][:-4]
+        labels.append(cast_labels_to(annotations[image_id]['class_label']))
+
+    if cast_labels_to == int:
+        labels = [l - 1 for l in labels]
+
+    df = pd.DataFrame({'paths': image_paths, 'labels': labels})
+    if max_images_per_class:
+        print(df_to_histogram(df))
+        df = limit_to_max_per_class(df, max_images_per_class)
+        print(df_to_histogram(df))
+    return df
+
+
+# marvel_root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
 #
-# train_df = train_ds.get_dataframe()
+# train_df = marvel_dataframe(marvel_root_dir, is_train=True, max_images_per_class=1000)
 # print(train_df)
+#
 # datagen = ImageDataGenerator(
 #     shear_range=0.2,
 #     zoom_range=0.2,
@@ -91,17 +106,47 @@ class MARVELDataset:
 #     y_col="labels",
 #     subset="training",
 #     batch_size=32,
-#     seed=42,
-#     shuffle=False,
+#     # seed=42,
+#     shuffle=True,
 #     class_mode="categorical",
 #     target_size=(224, 224),
 # )
+# class_dict = {
+#     1: 'Container Ship',
+#     2: 'Bulk Carrier',
+#     3: 'Passengers Ship',
+#     4: 'Ro-ro/passenger Ship',
+#     5: 'Ro-ro Cargo',
+#     6: 'Tug',
+#     7: 'Vehicles Carrier',
+#     8: 'Reefer',
+#     9: 'Yacht',
+#     10: 'Sailing Vessel',
+#     11: 'Heavy Load Carrier',
+#     12: 'Wood Chips Carrier',
+#     13: 'Livestock Carrier',
+#     14: 'Fire Fighting Vessel',
+#     15: 'Patrol Vessel',
+#     16: 'Platform',
+#     17: 'Standby Safety Vessel',
+#     18: 'Combat Vessel',
+#     19: 'Training Ship',
+#     20: 'Icebreaker',
+#     21: 'Replenishment Vessel',
+#     22: 'Tankers',
+#     23: 'Fishing Vessels',
+#     24: 'Supply Vessels',
+#     25: 'Carrier/Floating',
+#     26: 'Dredgers',
+# }
 #
 # for batch_images, batch_labels in train_generator:
 #     print(batch_images.shape)
-#     for i in range(3):
+#     for i in range(32):
 #         a = batch_images[i]
+#         print(class_dict[np.where(batch_labels[i] == 1)[0][0] + 1])
 #         a = np.interp(a, (a.min(), a.max()), (0, 255))
 #         image = Image.fromarray(a.astype(np.uint8), 'RGB')
 #         image.show()
+#         input('type enter')
 #     break
