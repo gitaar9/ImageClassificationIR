@@ -53,6 +53,8 @@ try:
     for (_, image_path, label) in train_df.itertuples(name=None):
         h = df_to_histogram(side_view_images)
         if h[label] >= 500:
+            if all(v >= 500 for v in h.values()):
+                break
             continue
         still_needed = total_needed(h, 500)
         images_per_minute = 60 / ((time.time() - start_time) / total_images_added)
