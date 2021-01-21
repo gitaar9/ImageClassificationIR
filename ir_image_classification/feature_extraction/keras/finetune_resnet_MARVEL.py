@@ -80,7 +80,7 @@ def main():
     # Load the data
     # root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
     root_dir = '/data/s2576597/MARVEL/'
-    max_images_per_class = 500  # None
+    max_images_per_class = 1000  # None
     train_generator, test_generator = build_datasets(root_dir, batch_size=100, max_images_per_class=max_images_per_class)
 
     # CREATE THE MODEL
@@ -113,7 +113,7 @@ def main():
 
     # TRAINING PART
     # Train the head model
-    epochs = 40  # 10
+    epochs = 20  # 10
     head_training_history = model.fit(
         train_generator,
         epochs=epochs,
@@ -127,7 +127,7 @@ def main():
         loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
         metrics=[tf.keras.metrics.CategoricalAccuracy()],
     )
-    final_epochs = 40  # 10
+    final_epochs = 20  # 10
     final_training_history = model.fit(train_generator, epochs=final_epochs, validation_data=test_generator)
 
     # Create some final plots and save the model

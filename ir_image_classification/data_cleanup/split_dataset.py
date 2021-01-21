@@ -28,7 +28,7 @@ already_checked_paths = set(side_view_images['paths']).union(set(other_view_imag
 )
 
 # Load the data from the standard marvel dataset
-allowed_classes = {19}  # {0, 5, 8, 9, 17, 19, 21, 22}
+allowed_classes = {0, 5, 8, 9, 17, 19, 21, 22}
 marvel_root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
 train_df = marvel_dataframe(marvel_root_dir, is_train=True, cast_labels_to=int)
 train_df = train_df[train_df['labels'].isin(allowed_classes)]  # Remove not allowed classes
@@ -42,6 +42,8 @@ try:
     total_images_added = 0.1
     cv2.namedWindow("Split images")
     for (_, image_path, label) in train_df.itertuples(name=None):
+        if df_to_histogram(side_view_images)[label] >= 500:
+            continue
         print("Images per minute: {:.2f}".format(60 / ((time.time() - start_time) / total_images_added)))
         print(f"\nClass is {classes[label]}. 0(Sideview), 1(Otherview), 2(Skip), 3(Quit program)")
         print(image_path, label)
