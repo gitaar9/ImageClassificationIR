@@ -9,6 +9,14 @@ from ir_image_classification.feature_extraction.keras.keras_dataset import marve
 import numpy as np
 
 
+def total_needed(hist, wanted_per_class):
+    still_needed = 0
+    for _, count in hist.items():
+        if count < wanted_per_class:
+            still_needed += wanted_per_class - count
+    return still_needed
+
+
 # Load the existing panda dfs for sideview and otherviews
 try:
     side_view_images = pd.read_hdf('side_view_images.hdf', 'df')
@@ -28,7 +36,7 @@ already_checked_paths = set(side_view_images['paths']).union(set(other_view_imag
 )
 
 # Load the data from the standard marvel dataset
-allowed_classes = {0, 5, 8, 9, 17, 19, 21, 22}
+allowed_classes = {0, 2, 5, 8, 9, 17, 19, 21, 22, 25}
 marvel_root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
 train_df = marvel_dataframe(marvel_root_dir, is_train=True, cast_labels_to=int)
 train_df = train_df[train_df['labels'].isin(allowed_classes)]  # Remove not allowed classes
@@ -40,11 +48,17 @@ train_df = train_df.sample(frac=1)  # Shuffle the df
 try:
     start_time = time.time()
     total_images_added = 0.1
+    total_side_image_added = 0.1
     cv2.namedWindow("Split images")
     for (_, image_path, label) in train_df.itertuples(name=None):
-        if df_to_histogram(side_view_images)[label] >= 500:
+        h = df_to_histogram(side_view_images)
+        if h[label] >= 500:
             continue
-        print("Images per minute: {:.2f}".format(60 / ((time.time() - start_time) / total_images_added)))
+        still_needed = total_needed(h, 500)
+        images_per_minute = 60 / ((time.time() - start_time) / total_images_added)
+        side_images_per_minute = 60 / ((time.time() - start_time) / total_side_image_added)
+        print(f"Still needed: {still_needed}")
+        print("Images per minute: {:.2f} (ETA: {:.2f} minutes)".format(images_per_minute, still_needed / side_images_per_minute))
         print(f"\nClass is {classes[label]}. 0(Sideview), 1(Otherview), 2(Skip), 3(Quit program)")
         print(image_path, label)
 
@@ -54,6 +68,7 @@ try:
 
         if k == '0':  # toggle current image
             total_images_added += 1
+            total_side_image_added += 1
             print('Add to sideview dataset')
             side_view_images = side_view_images.append({'paths': image_path, 'labels': label}, ignore_index=True)
             continue
