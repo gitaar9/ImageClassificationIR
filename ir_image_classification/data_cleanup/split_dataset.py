@@ -28,7 +28,7 @@ already_checked_paths = set(side_view_images['paths']).union(set(other_view_imag
 )
 
 # Load the data from the standard marvel dataset
-allowed_classes = {17}  # {0, 5, 8, 9, 17, 19, 21, 22}
+allowed_classes = {19}  # {0, 5, 8, 9, 17, 19, 21, 22}
 marvel_root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
 train_df = marvel_dataframe(marvel_root_dir, is_train=True, cast_labels_to=int)
 train_df = train_df[train_df['labels'].isin(allowed_classes)]  # Remove not allowed classes
