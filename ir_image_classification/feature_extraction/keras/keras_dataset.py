@@ -1,12 +1,7 @@
 import glob
 import os
 
-import numpy as np
 import pandas as pd
-import tensorflow as tf
-from PIL import Image
-from keras_preprocessing.image import ImageDataGenerator
-
 
 classes = ['Container Ship', 'Bulk Carrier', 'Passengers Ship', 'Ro-ro/passenger Ship', 'Ro-ro Cargo', 'Tug',
            'Vehicles Carrier', 'Reefer', 'Yacht', 'Sailing Vessel', 'Heavy Load Carrier', 'Wood Chips Carrier',
@@ -83,6 +78,15 @@ def marvel_dataframe(root_dir, is_train=True, cast_labels_to=str, max_images_per
         print(df_to_histogram(df))
         df = limit_to_max_per_class(df, max_images_per_class)
         print(df_to_histogram(df))
+    return df
+
+
+def marvel_side_other_view_dataframe(is_train=True, cast_labels_to=str):
+    df = pd.read_hdf('side_view_images.hdf', 'df') if is_train else pd.read_hdf('other_view_images.hdf', 'df')
+    df['labels'] = df['labels'].astype(cast_labels_to)
+
+    if cast_labels_to == int:  # Repair some earlier mistake where I subtracted one from the label
+        df['labels'] += 1
     return df
 
 

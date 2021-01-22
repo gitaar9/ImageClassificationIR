@@ -6,17 +6,7 @@ from PIL import Image
 from cv2 import cv2
 from torch.utils.data import Dataset
 
-
-def create_annotation_line_dict(image_id: str,
-                                set_index: str,
-                                class_label: str,
-                                class_label_name: str) -> dict:
-    return {
-        "image_id": image_id,
-        "is_train": True if set_index == '1' else False,
-        "class_label": int(class_label),
-        "class_label_name": class_label_name,
-    }
+from ir_image_classification.feature_extraction.keras.keras_dataset import valid_image_paths_and_filtered_annotations
 
 
 class MARVELDataset(Dataset):
@@ -31,39 +21,16 @@ class MARVELDataset(Dataset):
         self.root_dir = root_dir
         self.transform = transform
 
-        # Retrieve all images paths
-        self.images_paths = [path for path in glob.glob(os.path.join(root_dir, 'W*_1/*.jpg'))]
-        print(f'Found {len(self.images_paths)} MARVEL images.')
-
-        # Read in annotations
-        with open(os.path.join(root_dir, 'VesselClassification.dat')) as f:
-            self.annotations = [line.strip().split(",") for line in f.readlines()]
-        self.annotations = {
-            image_id: {
-                "is_train": True if set_index == '1' else False,
-                "class_label": int(class_label),
-                "class_label_name": class_label_name,
-            } for image_id, set_index, class_label, class_label_name in self.annotations
-        }
-
-        # Remove annotations of not downloaded images + filter based on train/test set
-        image_ids = {p.split('/')[-1][:-4] for p in self.images_paths}
-        self.annotations = {
-            key: value for key, value in self.annotations.items() if key in image_ids and value['is_train'] == is_train
-        }
-
-        # Filter image paths based on annotations
-        self.images_paths = [p for p in self.images_paths if p.split('/')[-1][:-4] in self.annotations.keys()]
-        print(f'{len(self.images_paths)} MARVEL images were loaded.')
+        self.image_paths, self.annotations = valid_image_paths_and_filtered_annotations(root_dir, is_train)
 
     def __len__(self):
-        return len(self.images_paths)
+        return len(self.image_paths)
 
     def __getitem__(self, idx):
-        image_path = self.images_paths[idx]
+        image_path = self.image_paths[idx]
         image_id = image_path.split('/')[-1][:-4]
 
-        image = cv2.imread(self.images_paths[idx])
+        image = cv2.imread(self.image_paths[idx])
         image = Image.fromarray(image, 'RGB')
 
         if self.transform:
@@ -72,7 +39,7 @@ class MARVELDataset(Dataset):
         return image, self.annotations[image_id]['class_label']
 
     def show_image(self, idx):
-        image_path = self.images_paths[idx]
+        image_path = self.image_paths[idx]
         image_id = image_path.split('/')[-1][:-4]
         print(f'Label of shown image is {self.annotations[image_id]["class_label_name"]}'
               f'({self.annotations[image_id]["class_label"]})')

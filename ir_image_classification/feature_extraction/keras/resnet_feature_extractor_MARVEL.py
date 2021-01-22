@@ -1,10 +1,13 @@
 import PIL
 import numpy as np
 import tensorflow as tf
+from keras_preprocessing.image import ImageDataGenerator
 from tensorflow.python.keras.applications.resnet import ResNet152
 from tensorflow.python.keras.applications.resnet_v2 import ResNet152V2
 from torchvision.transforms import transforms
 
+from ir_image_classification.feature_extraction.keras.keras_dataset import marvel_dataframe, \
+    marvel_side_other_view_dataframe
 from ir_image_classification.feature_extraction.pytorch.pytorch_marvel_dataset import MARVELDataset
 from ir_image_classification.feature_extraction.pytorch.resnet_feature_extractor import save_features_as_npy_files
 
@@ -19,8 +22,7 @@ def pytorch_dataset_to_np_arrays(ds, start_idx, end_idx):
     return data, labels
 
 
-def build_complete_feature_extraction_pipeline(cnn_class=ResNet152V2,
-                                               preprocess_function=tf.keras.applications.resnet_v2.preprocess_input):
+def build_complete_feature_extraction_pipeline(cnn_class=ResNet152V2):
     """
     Loads a pretrained ResNet model and removes the dense layer, adds the standard preprocessing and returns the two
     as a pipeline.
@@ -32,70 +34,65 @@ def build_complete_feature_extraction_pipeline(cnn_class=ResNet152V2,
         pooling=None,
     )
     model = tf.keras.Model(model.inputs, model.layers[-2].output)  # Remove the last dense layer
-
-    # Create and compile the pipeline
-    inputs = tf.keras.Input(shape=(224, 224, 3))
-    preprocessed_inputs = preprocess_function(inputs)
-    outputs = model(preprocessed_inputs)
-
-    pipeline = tf.keras.Model(inputs, outputs)
-    return pipeline
+    return model
+    # # Create and compile the pipeline
+    # inputs = tf.keras.Input(shape=(224, 224, 3))
+    # preprocessed_inputs = preprocess_function(inputs)
+    # outputs = model(preprocessed_inputs)
+    #
+    # pipeline = tf.keras.Model(inputs, outputs)
+    # return pipeline
 
 
 def main():
     # Settings
     cnn_class = ResNet152
-    preprocess_function = tf.keras.applications.resnet.preprocess_input
+    root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
+    batch_size = 100
+    data_subset = 'test'
 
-    # Load the data
     # Create the model
-    model = build_complete_feature_extraction_pipeline(
-        cnn_class=cnn_class,
-        preprocess_function=preprocess_function
+    model = build_complete_feature_extraction_pipeline(cnn_class=cnn_class)
+
+    # Load data
+    # df = marvel_dataframe(root_dir, is_train=(data_subset == 'train')))
+    df = marvel_side_other_view_dataframe(is_train=(data_subset == 'train'), cast_labels_to=int)
+    datagen = ImageDataGenerator(preprocessing_function=tf.keras.applications.resnet.preprocess_input)
+    data_generator = datagen.flow_from_dataframe(
+        dataframe=df,
+        directory=None,
+        x_col="paths",
+        y_col="labels",
+        batch_size=batch_size,
+        seed=42,
+        shuffle=True,
+        class_mode="raw",
+        target_size=(224, 224),
     )
 
     # Directories and names of the extracted dataset
     root_extracted_dataset_dir = "/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets"
-    output_dataset_name = f"MARVEL_keras_{cnn_class.__name__}_224px"
+    output_dataset_name = f"MARVEL_side_other_view_keras_{cnn_class.__name__}_224px"
+
+    # Main prediction loop
+    all_features = []
+    all_labels = []
+    for batch_idx, (x_batch, y_batch) in enumerate(data_generator):
+        if batch_idx >= len(data_generator):
+            break
+        print(f"{batch_idx}/{len(data_generator)}\r")
+        features = model.predict(x_batch)
+        all_features.append(features)
+        all_labels.extend(y_batch)
+
+    all_features = np.concatenate(all_features, axis=0)
+    all_labels = np.asarray(all_labels)
+
+    # Save the features to an npy file
+    print(all_features.shape)
+    print(all_labels.shape)
     print(f"Saving the extracted dataset as: {output_dataset_name}")
-
-    # Load data
-    root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
-    image_transform = transforms.Compose([
-        transforms.Resize((224, 224), interpolation=PIL.Image.BICUBIC)
-    ])
-
-    batch_size = 100
-
-    # train_ds = MARVELDataset(root_dir=root_dir, transform=image_transform, is_train=True)
-    # train_features = []
-    # train_labels = []
-    # for idx in range(0, len(train_ds), batch_size):
-    #     print(idx)
-    #     data, labels = pytorch_dataset_to_np_arrays(train_ds, idx, idx + batch_size)
-    #     features = model.predict(data)
-    #     train_features.append(features)
-    #     train_labels.extend(labels)
-    # train_features = np.concatenate(train_features, axis=0)
-    # train_labels = np.asarray(train_labels)
-    # print(train_features.shape)
-    # print(train_labels.shape)
-    # save_features_as_npy_files(train_features, train_labels, root_extracted_dataset_dir, output_dataset_name, 'train')
-
-    test_ds = MARVELDataset(root_dir=root_dir, transform=image_transform, is_train=False)
-    test_features = []
-    test_labels = []
-    for idx in range(0, len(test_ds), batch_size):
-        print(idx)
-        data, labels = pytorch_dataset_to_np_arrays(test_ds, idx, idx + batch_size)
-        features = model.predict(data)
-        test_features.append(features)
-        test_labels.extend(labels)
-    test_features = np.concatenate(test_features, axis=0)
-    test_labels = np.asarray(test_labels)
-    print(test_features.shape)
-    print(test_labels.shape)
-    save_features_as_npy_files(test_features, test_labels, root_extracted_dataset_dir, output_dataset_name, 'test')
+    save_features_as_npy_files(all_features, all_labels, root_extracted_dataset_dir, output_dataset_name, data_subset)
 
 
 if __name__ == "__main__":

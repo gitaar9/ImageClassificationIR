@@ -10,10 +10,10 @@ from skopt import BayesSearchCV
 
 
 def load_dataset(dataset_path, normalize=False, name=""):
-    X_train = np.load(os.path.join(dataset_path, f"{name}_train_features.npy"))
-    y_train = np.load(os.path.join(dataset_path, f"{name}_train_labels.npy"))
-    X_test = np.load(os.path.join(dataset_path, f"{name}_test_features.npy"))
-    y_test = np.load(os.path.join(dataset_path, f"{name}_test_labels.npy"))
+    X_train = np.load(os.path.join(dataset_path, f"{name}train_features.npy"))
+    y_train = np.load(os.path.join(dataset_path, f"{name}train_labels.npy"))
+    X_test = np.load(os.path.join(dataset_path, f"{name}test_features.npy"))
+    y_test = np.load(os.path.join(dataset_path, f"{name}test_labels.npy"))
 
     if normalize:
         scaler = MinMaxScaler()
