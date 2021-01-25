@@ -1,0 +1,14 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=128GB
+#SBATCH --time=20:30:00
+#SBATCH --partition=regular
+#SBATCH --job-name=optimize_svm
+
+ml Python/3.7.4-GCCcore-8.3.0
+
+source ../IR_venv/bin/activate
+
+python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /home/s2576597/Pix2VoxPP/extracted_datasets --dataset_name side_other_view_early_features_ --nworkers 16

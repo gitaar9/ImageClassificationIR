@@ -6,7 +6,7 @@ import numpy as np
 from sklearn import svm
 from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
 from sklearn.preprocessing import MinMaxScaler
-from skopt import BayesSearchCV
+# from skopt import BayesSearchCV
 
 from ir_image_classification.data_visualization.util import get_random_permutation
 
@@ -62,23 +62,23 @@ def svc_grid_search(X, y, nfolds=3, n_jobs=5, cv=None, verbose=False):
     return grid_search.best_params_, grid_search.best_score_
 
 
-def svm_bayes_search(X, y, nfolds):
-    opt = BayesSearchCV(
-        svm.SVC(),
-        {
-            'C': (1e-6, 1e+6, 'log-uniform'),
-            'gamma': (1e-6, 1e+1, 'log-uniform'),
-            'degree': (1, 8),  # integer valued parameter
-            'kernel': ['linear', 'poly', 'rbf'],  # categorical parameter
-        },
-        n_iter=32,
-        cv=nfolds,
-        n_jobs=5
-    )
-
-    opt.fit(X, y)
-    print("val. score: %s" % opt.best_score_)  # 0.458
-    print(dir(opt))
+# def svm_bayes_search(X, y, nfolds):
+#     opt = BayesSearchCV(
+#         svm.SVC(),
+#         {
+#             'C': (1e-6, 1e+6, 'log-uniform'),
+#             'gamma': (1e-6, 1e+1, 'log-uniform'),
+#             'degree': (1, 8),  # integer valued parameter
+#             'kernel': ['linear', 'poly', 'rbf'],  # categorical parameter
+#         },
+#         n_iter=32,
+#         cv=nfolds,
+#         n_jobs=5
+#     )
+#
+#     opt.fit(X, y)
+#     print("val. score: %s" % opt.best_score_)  # 0.458
+#     print(dir(opt))
 
 
 def main(dataset_path=None, dataset_name=None, n_jobs=10):
