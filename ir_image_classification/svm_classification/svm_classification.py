@@ -16,21 +16,11 @@ from ir_image_classification.svm_classification.svm_optimization import load_dat
 # name = ""
 
 
-name = "with_random_bg_scratch_early_features_subset_"
-dataset_path = '/home/gitaar9/AI/TNO/Pix2VoxPP'
+name = "side_other_view_early_features_"
+dataset_path = '/home/gitaar9/AI/TNO/Pix2VoxPP/extracted_datasets'
 normalize = True
 
 X_train, y_train, X_test, y_test = load_dataset(dataset_path, normalize=normalize, name=name)
-
-# Shuffle the dataset
-rndperm = get_random_permutation(X_train.shape[0])
-
-# Take only 30000 samples
-N = 10000
-print(X_train.shape, y_train.shape)
-X_train_subset = X_train[rndperm][:N].copy()
-y_train_subset = y_train[rndperm][:N].copy()
-print(X_train_subset.shape, y_train_subset.shape)
 
 # Create a svm Classifier
 clf = svm.SVC(
@@ -43,15 +33,15 @@ clf = svm.SVC(
 )
 
 # Train the model using the training set
-clf.fit(X_train_subset, y_train_subset)
+clf.fit(X_train, y_train)
 
 # Validation accuracy
 pred_test = clf.predict(X_test)
 print("Validation Accuracy:", metrics.accuracy_score(y_test, pred_test))
 
 # Train accuracy
-pred_train = clf.predict(X_train_subset)
-print("Train Accuracy:", metrics.accuracy_score(y_train_subset, pred_train))
+pred_train = clf.predict(X_train)
+print("Train Accuracy:", metrics.accuracy_score(y_train, pred_train))
 
 
 

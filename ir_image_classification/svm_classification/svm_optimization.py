@@ -8,8 +8,10 @@ from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
 from sklearn.preprocessing import MinMaxScaler
 from skopt import BayesSearchCV
 
+from ir_image_classification.data_visualization.util import get_random_permutation
 
-def load_dataset(dataset_path, normalize=False, name=""):
+
+def load_dataset(dataset_path, normalize=False, name="", subset_size=None):
     X_train = np.load(os.path.join(dataset_path, f"{name}train_features.npy"))
     y_train = np.load(os.path.join(dataset_path, f"{name}train_labels.npy"))
     X_test = np.load(os.path.join(dataset_path, f"{name}test_features.npy"))
@@ -20,6 +22,16 @@ def load_dataset(dataset_path, normalize=False, name=""):
         X_train = scaler.fit_transform(X_train)
         X_test = scaler.fit_transform(X_test)
 
+    if subset_size:
+        # Shuffle the dataset
+        rndperm = get_random_permutation(X_train.shape[0])
+
+        # Take only subset_size samples
+        print("Sizes before subsampling:", X_train.shape, y_train.shape)
+        X_train = X_train[rndperm][:subset_size].copy()
+        y_train = y_train[rndperm][:subset_size].copy()
+        print("Sizes after subsampling:", X_train.shape, y_train.shape)
+
     return X_train, y_train, X_test, y_test
 
 
@@ -29,7 +41,7 @@ def svc_grid_search(X, y, nfolds=3, n_jobs=5, cv=None, verbose=False):
         'gamma': list(np.logspace(-5, 2, 4)),
         'degree': [0, 1, 2, 3],
         'kernel': ["rbf", "poly"],
-        'max_iter': [10000]
+        'max_iter': [100000]
     }
     if verbose:
         print("Performing grid search with the following parameters:\n")
@@ -70,13 +82,12 @@ def svm_bayes_search(X, y, nfolds):
 
 
 def main(dataset_path=None, dataset_name=None, n_jobs=10):
-    if dataset_path is None:
-        dataset_path = '/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets/'
-    if dataset_name is None:
-        dataset_name = "keras_ResNet152_224px_pp1"
-
     # Load the data
-    X_train, y_train, X_test, y_test = load_dataset(os.path.join(dataset_path, dataset_name), normalize=False)
+    # name = "side_other_view_early_features_"
+    # dataset_path = '/home/gitaar9/AI/TNO/Pix2VoxPP/extracted_datasets'
+
+    X_train, y_train, X_test, y_test = load_dataset(dataset_path, normalize=True, name=dataset_name)
+
     print(X_train.shape, X_test.shape)
 
     # Hacky way of using the train/test sets for optimization
