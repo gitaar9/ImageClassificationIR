@@ -45,6 +45,7 @@ train_df = train_df.sample(frac=1)  # Shuffle the df
 
 
 # Loop for splitting the images in sideview or otherview datasets
+required_images_per_class = 600
 try:
     start_time = time.time()
     total_images_added = 0.1
@@ -52,11 +53,11 @@ try:
     cv2.namedWindow("Split images")
     for (_, image_path, label) in train_df.itertuples(name=None):
         h = df_to_histogram(side_view_images)
-        if h[label] >= 500:
-            if all(v >= 500 for v in h.values()):
+        if h[label] >= required_images_per_class:
+            if all(v >= required_images_per_class for v in h.values()):
                 break
             continue
-        still_needed = total_needed(h, 500)
+        still_needed = total_needed(h, required_images_per_class)
         images_per_minute = 60 / ((time.time() - start_time) / total_images_added)
         side_images_per_minute = 60 / ((time.time() - start_time) / total_side_image_added)
         print(f"Still needed: {still_needed}")
