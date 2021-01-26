@@ -37,8 +37,8 @@ def load_dataset(dataset_path, normalize=False, name="", subset_size=None):
 
 def svc_grid_search(X, y, nfolds=3, n_jobs=5, cv=None, verbose=False):
     param_grid = {
-        'C': list(np.logspace(-4, 3, 4)),
-        'gamma': list(np.logspace(-5, 2, 4)),
+        'C': list(np.logspace(-5, 3, 5)),
+        'gamma': list(np.logspace(-5, 4, 6)),
         'degree': [0, 1, 2, 3],
         'kernel': ["rbf", "poly"],
         'max_iter': [100000]
