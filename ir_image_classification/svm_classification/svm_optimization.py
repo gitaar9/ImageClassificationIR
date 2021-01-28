@@ -38,9 +38,9 @@ def load_dataset(dataset_path, normalize=False, name="", subset_size=None):
 def svc_grid_search(X, y, nfolds=3, n_jobs=5, cv=None, verbose=False):
     param_grid = {
         'C': list(np.logspace(-5, 3, 5)),
-        'gamma': list(np.logspace(-5, 4, 6)),
-        'degree': [0, 1, 2, 3],
-        'kernel': ["rbf", "poly"],
+        'gamma': list(np.logspace(-5, 3, 5)),
+        'degree': [0, 1, 2],
+        'kernel': ["rbf", "poly", "linear"],
         'max_iter': [100000]
     }
     if verbose:
@@ -85,7 +85,7 @@ def main(dataset_path=None, dataset_name=None, n_jobs=10):
     # Load the data
     # name = "side_other_view_early_features_"
     # dataset_path = '/home/gitaar9/AI/TNO/Pix2VoxPP/extracted_datasets'
-
+    print(f'Loading {dataset_name}')
     X_train, y_train, X_test, y_test = load_dataset(dataset_path, normalize=True, name=dataset_name)
 
     print(X_train.shape, X_test.shape)
