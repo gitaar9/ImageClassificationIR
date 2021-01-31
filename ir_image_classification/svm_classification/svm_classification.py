@@ -4,6 +4,7 @@ from sklearn import svm, metrics
 
 from ir_image_classification.data_visualization.util import get_random_permutation
 from ir_image_classification.svm_classification.svm_optimization import load_dataset
+from joblib import dump
 
 # Load data
 # dataset_name = "resnet50_224px"
@@ -15,19 +16,19 @@ from ir_image_classification.svm_classification.svm_optimization import load_dat
 # normalize = False
 # name = ""
 
-
-name = "side_other_view_early_features_"
+name = "side_other_view_early_newds_256_ft_300_"
 dataset_path = '/home/gitaar9/AI/TNO/Pix2VoxPP/extracted_datasets'
-normalize = True
+normalize = False
 
 X_train, y_train, X_test, y_test = load_dataset(dataset_path, normalize=normalize, name=name)
-
+print(X_train.shape)
+print(X_test.shape)
 # Create a svm Classifier
 clf = svm.SVC(
-    C=1,
+    C=1000,
     degree=3,
-    gamma=0.1,
-    kernel='poly',
+    gamma=1e-05,
+    kernel='rbf',
     max_iter=100000,
     verbose=1
 )
@@ -43,7 +44,11 @@ print("Validation Accuracy:", metrics.accuracy_score(y_test, pred_test))
 pred_train = clf.predict(X_train)
 print("Train Accuracy:", metrics.accuracy_score(y_train, pred_train))
 
-
+name = "trained_on_newds_256_ft_not_normalized"
+dump(
+    clf,
+    f'/home/gitaar9/TNO_Thesis/ImageClassificationIR/ir_image_classification/svm_classification/trained_svms/{name}'
+)
 
 #### Bullshit finetuned Pix2Vox++ results:
 # For 5000 samples:
