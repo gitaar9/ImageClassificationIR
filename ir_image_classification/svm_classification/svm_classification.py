@@ -1,9 +1,10 @@
 import os
 
 from sklearn import svm, metrics
-
+import matplotlib.pyplot as plt
 from ir_image_classification.data_visualization.util import get_random_permutation
 from ir_image_classification.svm_classification.svm_optimization import load_dataset
+from sklearn.metrics import plot_confusion_matrix
 from joblib import dump
 
 # Load data
@@ -26,7 +27,7 @@ print(X_test.shape)
 # Create a svm Classifier
 clf = svm.SVC(
     C=1000,
-    degree=3,
+    degree=0,
     gamma=1e-05,
     kernel='rbf',
     max_iter=100000,
@@ -39,6 +40,8 @@ clf.fit(X_train, y_train)
 # Validation accuracy
 pred_test = clf.predict(X_test)
 print("Validation Accuracy:", metrics.accuracy_score(y_test, pred_test))
+plot_confusion_matrix(clf, X_test, y_test)
+plt.show()
 
 # Train accuracy
 pred_train = clf.predict(X_train)
