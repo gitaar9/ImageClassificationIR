@@ -49,7 +49,7 @@ def svc_grid_search(X, y, nfolds=3, n_jobs=5, cv=None, verbose=False):
         'gamma': list(np.logspace(-5, 3, 5)),
         'degree': [0, 1, 2],
         'kernel': ["rbf", "poly", "linear"],
-        'max_iter': [100000]
+        'max_iter': [10000]
     }
     if verbose:
         print("Performing grid search with the following parameters:\n")
@@ -58,10 +58,12 @@ def svc_grid_search(X, y, nfolds=3, n_jobs=5, cv=None, verbose=False):
 
     if cv is None:
         cv = StratifiedShuffleSplit(n_splits=nfolds, test_size=0.2, random_state=42)
+    print(f"Using {n_jobs} workers.")
     grid_search = GridSearchCV(svm.SVC(), param_grid, cv=cv, n_jobs=n_jobs, verbose=1)
     grid_search.fit(X, y)
 
     if verbose:
+        print("#" * 30, '\n')
         for params, result in zip(grid_search.cv_results_['params'], grid_search.cv_results_['mean_test_score']):
             print(f"{params}: {result}")
 
@@ -105,7 +107,7 @@ def main(dataset_path=None, dataset_name=None, n_jobs=10):
     cv = [(list(range(len(X_train))), list(map(lambda idx: idx + len(X_train), range(len(X_test)))))]
 
     # Find the optimal parameters
-    best_params, best_score = svc_grid_search(all_data, all_labels, 3, n_jobs=n_jobs, cv=cv)
+    best_params, best_score = svc_grid_search(all_data, all_labels, 3, n_jobs=n_jobs, cv=cv, verbose=True)
 
     # Save the results to the csv file
     with open(os.path.join(dataset_path, 'results.csv'), 'a') as result_file:
