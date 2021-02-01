@@ -18,10 +18,17 @@ def load_dataset(dataset_path, normalize=False, name="", subset_size=None, nr_se
     X_test = np.load(os.path.join(dataset_path, f"{name}test_features.npy"))
     y_test = np.load(os.path.join(dataset_path, f"{name}test_labels.npy"))
 
+    if nr_selected_feature_with_pca:
+        pca = PCA(n_components=nr_selected_feature_with_pca)
+        X_train = pca.fit_transform(X_train)
+        X_test = pca.transform(X_test)
+        print(f'Cumulative explained variation for {nr_selected_feature_with_pca} '
+              f'principal components: {np.sum(pca.explained_variance_ratio_)}')
+
     if normalize:
         scaler = MinMaxScaler()
         X_train = scaler.fit_transform(X_train)
-        X_test = scaler.fit_transform(X_test)
+        X_test = scaler.transform(X_test)
 
     if subset_size:
         # Shuffle the dataset
@@ -32,13 +39,6 @@ def load_dataset(dataset_path, normalize=False, name="", subset_size=None, nr_se
         X_train = X_train[rndperm][:subset_size].copy()
         y_train = y_train[rndperm][:subset_size].copy()
         print("Sizes after subsampling:", X_train.shape, y_train.shape)
-
-    if nr_selected_feature_with_pca:
-        pca = PCA(n_components=nr_selected_feature_with_pca)
-        X_train = pca.fit_transform(X_train)
-        X_test = pca.transform(X_test)
-        print(f'Cumulative explained variation for {nr_selected_feature_with_pca} '
-              f'principal components: {np.sum(pca.explained_variance_ratio_)}')
 
     return X_train, y_train, X_test, y_test
 

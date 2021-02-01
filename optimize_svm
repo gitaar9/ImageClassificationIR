@@ -22,5 +22,6 @@ source ../IR_venv/bin/activate
 #python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /home/s2576597/Pix2VoxPP/extracted_datasets --dataset_name side_other_view_early_newds_256_ft_300_new_dataloader_settings_ --nworkers 16
 #python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /home/s2576597/Pix2VoxPP/extracted_datasets --dataset_name side_other_view_early_newds_256_scratch_300_new_dataloader_settings_ --nworkers 16
 
-python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /data/s2576597/extracted_datasets --dataset_name MARVEL_side_other_view_keras_ResNet152_224px --nworkers 16
-python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /data/s2576597/extracted_datasets --dataset_name Resnet_and_Pix2Vox_combined --nworkers 16
+#python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /data/s2576597/extracted_datasets --dataset_name MARVEL_side_other_view_keras_ResNet152_224px --nworkers 16
+#python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /data/s2576597/extracted_datasets --dataset_name Resnet_and_Pix2Vox_combined --nworkers 16
+python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /data/s2576597/extracted_datasets --dataset_name Resnet_and_Pix2Vox_combined_normalized --nworkers 16
