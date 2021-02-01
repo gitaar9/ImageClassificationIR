@@ -49,7 +49,7 @@ def svc_grid_search(X, y, nfolds=3, n_jobs=5, cv=None, verbose=False):
         'gamma': list(np.logspace(-5, 3, 5)),
         'degree': [0, 1, 2],
         'kernel': ["rbf", "poly", "linear"],
-        'max_iter': [10000]
+        'max_iter': [100000]
     }
     if verbose:
         print("Performing grid search with the following parameters:\n")
