@@ -18,6 +18,6 @@ source ../IR_venv/bin/activate
 #python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /home/s2576597/Pix2VoxPP/extracted_datasets --dataset_name side_other_view_early_features_ft_centercrop_ --nworkers 16
 #python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /home/s2576597/Pix2VoxPP/extracted_datasets --dataset_name side_other_view_early_newds_ft_360_ --nworkers 16
 #python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /home/s2576597/Pix2VoxPP/extracted_datasets --dataset_name side_other_view_early_oldds_ft_goodcrop_ --nworkers 16
-#python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /home/s2576597/Pix2VoxPP/extracted_datasets --dataset_name side_other_view_early_newds_256_ft_300_ --nworkers 16
+python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /home/s2576597/Pix2VoxPP/extracted_datasets --dataset_name side_other_view_early_newds_256_ft_300_ --nworkers 16
 #python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /home/s2576597/Pix2VoxPP/extracted_datasets --dataset_name side_other_view_early_newds_256_ft_300_new_dataloader_settings_ --nworkers 16
-python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /home/s2576597/Pix2VoxPP/extracted_datasets --dataset_name side_other_view_early_newds_256_scratch_300_new_dataloader_settings_ --nworkers 16
+#python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /home/s2576597/Pix2VoxPP/extracted_datasets --dataset_name side_other_view_early_newds_256_scratch_300_new_dataloader_settings_ --nworkers 16
