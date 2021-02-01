@@ -86,7 +86,7 @@ def main(dataset_path=None, dataset_name=None, n_jobs=10):
     # name = "side_other_view_early_features_"
     # dataset_path = '/home/gitaar9/AI/TNO/Pix2VoxPP/extracted_datasets'
     print(f'Loading {dataset_name}')
-    X_train, y_train, X_test, y_test = load_dataset(dataset_path, normalize=True, name=dataset_name)
+    X_train, y_train, X_test, y_test = load_dataset(dataset_path, normalize=False, name=dataset_name)
 
     print(X_train.shape, X_test.shape)
 
