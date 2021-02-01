@@ -49,7 +49,7 @@ def main():
     cnn_class = ResNet152
     root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
     batch_size = 100
-    data_subset = 'test'
+    data_subset = 'train'
 
     # Create the model
     model = build_complete_feature_extraction_pipeline(cnn_class=cnn_class)
@@ -65,7 +65,7 @@ def main():
         y_col="labels",
         batch_size=batch_size,
         seed=42,
-        shuffle=True,
+        shuffle=False,
         class_mode="raw",
         target_size=(224, 224),
     )

@@ -4,14 +4,15 @@ import pprint
 
 import numpy as np
 from sklearn import svm
+# from skopt import BayesSearchCV
+from sklearn.decomposition import PCA
 from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
 from sklearn.preprocessing import MinMaxScaler
-# from skopt import BayesSearchCV
 
 from ir_image_classification.data_visualization.util import get_random_permutation
 
 
-def load_dataset(dataset_path, normalize=False, name="", subset_size=None):
+def load_dataset(dataset_path, normalize=False, name="", subset_size=None, nr_selected_feature_with_pca=None):
     X_train = np.load(os.path.join(dataset_path, f"{name}train_features.npy"))
     y_train = np.load(os.path.join(dataset_path, f"{name}train_labels.npy"))
     X_test = np.load(os.path.join(dataset_path, f"{name}test_features.npy"))
@@ -31,6 +32,13 @@ def load_dataset(dataset_path, normalize=False, name="", subset_size=None):
         X_train = X_train[rndperm][:subset_size].copy()
         y_train = y_train[rndperm][:subset_size].copy()
         print("Sizes after subsampling:", X_train.shape, y_train.shape)
+
+    if nr_selected_feature_with_pca:
+        pca = PCA(n_components=nr_selected_feature_with_pca)
+        X_train = pca.fit_transform(X_train)
+        X_test = pca.transform(X_test)
+        print(f'Cumulative explained variation for {nr_selected_feature_with_pca} '
+              f'principal components: {np.sum(pca.explained_variance_ratio_)}')
 
     return X_train, y_train, X_test, y_test
 
@@ -83,10 +91,11 @@ def svc_grid_search(X, y, nfolds=3, n_jobs=5, cv=None, verbose=False):
 
 def main(dataset_path=None, dataset_name=None, n_jobs=10):
     # Load the data
-    # name = "side_other_view_early_features_"
-    # dataset_path = '/home/gitaar9/AI/TNO/Pix2VoxPP/extracted_datasets'
     print(f'Loading {dataset_name}')
-    X_train, y_train, X_test, y_test = load_dataset(dataset_path, normalize=False, name=dataset_name)
+    dataset_path = os.path.join(dataset_path, dataset_name)
+    name = ""  # dataset_name
+
+    X_train, y_train, X_test, y_test = load_dataset(dataset_path, normalize=False, name=name)
 
     print(X_train.shape, X_test.shape)
 
@@ -105,9 +114,9 @@ def main(dataset_path=None, dataset_name=None, n_jobs=10):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset_path', help="The path to the fodler right above the dataset folder", default=None)
+    parser.add_argument('--dataset_path', help="The path to the folder right above the dataset folder", default=None)
     parser.add_argument('--dataset_name', help="The name of the folder containing the dataset", default=None)
-    parser.add_argument('--nworkers', type=int, default=10,
+    parser.add_argument('--nworkers', type=int, default=4,
                         help='Number of workers for data loading  (0 to do it using main process) [Default : 10]')
     opt = parser.parse_args()
 
