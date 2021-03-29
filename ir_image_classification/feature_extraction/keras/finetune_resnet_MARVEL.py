@@ -131,7 +131,7 @@ def main():
     final_training_history = model.fit(train_generator, epochs=final_epochs, validation_data=test_generator)
 
     # Create some final plots and save the model
-    result_name = f"output/finetuned_{epochs}_{final_epochs}_{datetime.datetime.now().isoformat()}"
+    result_name = f"/data/s2576597/ImageClassificationIR_results/output/finetuned_{epochs}_{final_epochs}_{datetime.datetime.now().isoformat()}"
     if max_images_per_class:
         result_name += f"_mi_{max_images_per_class}"
     create_training_validation_plots(head_training_history.history, final_training_history.history, result_name)
