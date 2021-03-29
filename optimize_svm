@@ -9,7 +9,7 @@
 
 ml TensorFlow/2.3.1-fosscuda-2019b-Python-3.7.4
 
-source ../IR_venv/bin/activate
+source /data/s2576597/IR_venv/bin/activate
 
 #python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /home/s2576597/Pix2VoxPP/extracted_datasets --dataset_name side_other_view_early_features_ --nworkers 16
 #python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /home/s2576597/Pix2VoxPP/extracted_datasets --dataset_name side_other_view_early_features_ft_ --nworkers 16
@@ -24,4 +24,5 @@ source ../IR_venv/bin/activate
 
 #python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /data/s2576597/extracted_datasets --dataset_name MARVEL_side_other_view_keras_ResNet152_224px --nworkers 16
 #python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /data/s2576597/extracted_datasets --dataset_name Resnet_and_Pix2Vox_combined --nworkers 16
-python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /data/s2576597/extracted_datasets --dataset_name Resnet_and_Pix2Vox_combined_normalized --nworkers 16
+#python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /data/s2576597/extracted_datasets --dataset_name Resnet_and_Pix2Vox_combined_normalized --nworkers 16
+python -u ir_image_classification/svm_classification/svm_optimization.py --dataset_path /data/s2576597/extracted_datasets --dataset_name MARVEL_keras_ResNet152_224px --nworkers 16

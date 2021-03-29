@@ -8,6 +8,6 @@
 
 ml TensorFlow/2.3.1-fosscuda-2019b-Python-3.7.4
 
-source ../IR_venv/bin/activate
+source /data/s2576597/IR_venv/bin/activate
 
 python -u ir_image_classification/feature_extraction/keras/finetune_resnet_MARVEL.py
