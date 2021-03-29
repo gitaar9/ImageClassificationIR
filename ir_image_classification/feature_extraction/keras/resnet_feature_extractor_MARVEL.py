@@ -49,14 +49,14 @@ def main():
     cnn_class = ResNet152
     root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
     batch_size = 100
-    data_subset = 'train'
+    data_subset = 'test'
 
     # Create the model
     model = build_complete_feature_extraction_pipeline(cnn_class=cnn_class)
 
     # Load data
-    # df = marvel_dataframe(root_dir, is_train=(data_subset == 'train')))
-    df = marvel_side_other_view_dataframe(is_train=(data_subset == 'train'), cast_labels_to=int)
+    df = marvel_dataframe(root_dir, is_train=(data_subset == 'train'))
+    # df = marvel_side_other_view_dataframe(is_train=(data_subset == 'train'), cast_labels_to=int)
     datagen = ImageDataGenerator(preprocessing_function=tf.keras.applications.resnet.preprocess_input)
     data_generator = datagen.flow_from_dataframe(
         dataframe=df,

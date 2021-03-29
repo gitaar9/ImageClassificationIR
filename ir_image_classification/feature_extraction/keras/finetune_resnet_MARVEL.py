@@ -80,7 +80,7 @@ def main():
     # Load the data
     # root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
     root_dir = '/data/s2576597/MARVEL/'
-    max_images_per_class = 1000  # None
+    max_images_per_class = None
     train_generator, test_generator = build_datasets(root_dir, batch_size=100, max_images_per_class=max_images_per_class)
 
     # CREATE THE MODEL

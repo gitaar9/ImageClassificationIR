@@ -2,6 +2,10 @@ import glob
 import os
 
 import pandas as pd
+from PIL import Image
+from keras_preprocessing.image import ImageDataGenerator
+import tensorflow as tf
+import numpy as np
 
 classes = ['Container Ship', 'Bulk Carrier', 'Passengers Ship', 'Ro-ro/passenger Ship', 'Ro-ro Cargo', 'Tug',
            'Vehicles Carrier', 'Reefer', 'Yacht', 'Sailing Vessel', 'Heavy Load Carrier', 'Wood Chips Carrier',
@@ -40,6 +44,9 @@ def valid_image_paths_and_filtered_annotations(root_dir, is_train):
     # Read in annotations
     with open(os.path.join(root_dir, 'VesselClassification.dat')) as f:
         annotations = [line.strip().split(",") for line in f.readlines()]
+    image_ids = [image_id for image_id, _, _, _ in annotations]
+    print(f'{len(image_ids)}/{len(set(image_ids))}')
+
     annotations = {
         image_id: {
             "is_train": True if set_index == '1' else False,
@@ -92,15 +99,15 @@ def marvel_side_other_view_dataframe(is_train=True, cast_labels_to=str):
 
 # marvel_root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
 #
-# train_df = marvel_dataframe(marvel_root_dir, is_train=True, max_images_per_class=1000)
+# train_df = marvel_side_other_view_dataframe(is_train=False)
 # print(train_df)
 #
 # datagen = ImageDataGenerator(
-#     shear_range=0.2,
-#     zoom_range=0.2,
-#     horizontal_flip=True,
-#     rotation_range=3,
-#     preprocessing_function=tf.keras.applications.resnet.preprocess_input
+#     # shear_range=0.2,
+#     # zoom_range=0.2,
+#     # horizontal_flip=True,
+#     # rotation_range=3,
+#     # preprocessing_function=tf.keras.applications.resnet.preprocess_input
 # )
 #
 # train_generator = datagen.flow_from_dataframe(
@@ -151,6 +158,7 @@ def marvel_side_other_view_dataframe(is_train=True, cast_labels_to=str):
 #         print(class_dict[np.where(batch_labels[i] == 1)[0][0] + 1])
 #         a = np.interp(a, (a.min(), a.max()), (0, 255))
 #         image = Image.fromarray(a.astype(np.uint8), 'RGB')
-#         image.show()
-#         input('type enter')
+#         # image.show()
+#         image.save(f'images_for_presentation/other_{i}.png')
+#         # input('type enter')
 #     break

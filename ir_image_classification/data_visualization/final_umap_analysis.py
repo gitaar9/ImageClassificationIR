@@ -6,6 +6,7 @@ from umap import UMAP
 
 from ir_image_classification.data_visualization.util import load_data, get_random_permutation, data_to_df, \
     load_data_3d_features
+from os import path
 
 
 number_of_classes = 10 # 26
@@ -13,9 +14,18 @@ number_of_classes = 10 # 26
 # Load np arrays of data/labels
 # dataset_path = '/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets/MARVEL_keras_ResNet152_224px'
 # dataset_path = '/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets/keras_ResNet152_224px_RGB'
-dataset_path = '/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets/MARVEL_side_other_view_keras_ResNet152_224px'
-X, y = load_data(dataset_path)
 
+dataset_path = '/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets/Pix2Vox_side_other_view_256_ft_300'
+X, y = load_data(dataset_path)
+train_length = len(y)
+test_X, test_Y = np.load(path.join(dataset_path, "test_features.npy")), np.load(path.join(dataset_path, "test_labels.npy"))
+print(X.shape, test_X.shape)
+X = np.concatenate([X, test_X.copy()], axis=0)
+y = np.concatenate([y, test_Y.copy()], axis=0)
+del test_X
+del test_Y
+
+print(X.shape, y.shape)
 
 # dataset_path = '/home/gitaar9/AI/TNO/Pix2VoxPP'
 # X, y = load_data_3d_features(dataset_path)
@@ -33,19 +43,20 @@ df, feat_cols = data_to_df(X, y)
 print('Size of the dataframe: {}'.format(df.shape))
 
 # Shuffle the dataset
-rndperm = get_random_permutation(X.shape[0])
+# rndperm = get_random_permutation(X.shape[0])
 
 # Take only 10000 samples
-N = 30000
-df_subset = df.loc[rndperm[:N], :].copy()
-data_subset = df_subset[feat_cols].values
-label_subset = df_subset['label'].values
+# N = 30000
+# df_subset = df.loc[rndperm[:N], :].copy()
+
+data_df = df[feat_cols].values
+label_df = df['label'].values
 
 
 # Get 50 dimensions using PCA
-n_dimensions = 300
-pca = PCA(n_components=n_dimensions)
-pca_result = pca.fit_transform(data_subset)
+n_dimensions = 1000
+pca = PCA(n_components=n_dimensions, random_state=42)
+pca_result = pca.fit_transform(data_df)
 print(f'Cumulative explained variation for {n_dimensions} '
       f'principal components: {np.sum(pca.explained_variance_ratio_)}')
 
@@ -72,26 +83,42 @@ embedding = reducer.transform(pca_result)
 # plt.title('UMAP projection of the Digits dataset', fontsize=24)
 
 # Plot the tsne
-df_subset['umap-one'] = embedding[:, 0]
-df_subset['umap-two'] = embedding[:, 1]
+df['umap-one'] = embedding[:, 0]
+df['umap-two'] = embedding[:, 1]
 plt.figure(figsize=(20, 12))
 sns.scatterplot(
     x="umap-one", y="umap-two",
     hue="label",
     palette=sns.color_palette("hls", number_of_classes),
-    data=df_subset,
+    data=df[:train_length].sort_values(by=['label']),
     legend="full",
     alpha=.5,
-    marker="o"
+    marker="."
 )
+plt.xlim(1, 13)
+plt.ylim(0, 9)
+
+plt.show()
+plt.figure(figsize=(20, 12))
+
 sns.scatterplot(
     x="umap-one", y="umap-two",
     hue="label",
     palette=sns.color_palette("hls", number_of_classes),
-    data=df_subset,
+    data=df[:train_length].sort_values(by=['label']),
     legend="full",
     alpha=.5,
-    marker="+"
+    marker="."
 )
 
+sns.scatterplot(
+    x="umap-one", y="umap-two",
+    hue="label",
+    palette=sns.color_palette("hls", number_of_classes),
+    data=df[train_length:].sort_values(by=['label']),
+    alpha=1,
+    marker="."
+)
+plt.xlim(1, 13)
+plt.ylim(0, 9)
 plt.show()

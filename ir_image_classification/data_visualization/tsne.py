@@ -15,14 +15,15 @@ from sklearn.preprocessing import StandardScaler
 from ir_image_classification.data_visualization.util import load_data, data_to_df, get_random_permutation, \
     load_data_3d_features
 
+number_of_classes = 10 # 26
 # Load np arrays of data/labels
 # dataset_path = '/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets/labeled_shapenet_keras_ResNet152_224px'
-# # dataset_path = '/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets/MARVEL_keras_ResNet152_224px'
 # # dataset_path = '/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets/keras_ResNet152_224px_RGB'
-# X, y = load_data(dataset_path)
+dataset_path = '/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets/MARVEL_side_other_view_keras_ResNet152_224px'
+X, y = load_data(dataset_path)
 
-dataset_path = '/home/gitaar9/AI/TNO/Pix2VoxPP'
-X, y = load_data_3d_features(dataset_path, "with_random_bg_scratch_early_features_subset_train")
+# dataset_path = '/home/gitaar9/AI/TNO/Pix2VoxPP'
+# X, y = load_data_3d_features(dataset_path, "with_random_bg_scratch_early_features_subset_train")
 
 print(np.max(y))  # Amount of colors for the plots
 print(X.shape)
@@ -61,11 +62,11 @@ plt.figure(figsize=(20, 12))
 sns.scatterplot(
     x="tsne-2d-one", y="tsne-2d-two",
     hue="label",
-    palette=sns.color_palette("hls", 26),
+    palette=sns.color_palette("hls", number_of_classes),
     data=df_subset,
     legend="full",
     alpha=.5,
-    style="label"
+    marker="o"
 )
 plt.show()
 
