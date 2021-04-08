@@ -10,7 +10,6 @@ from tensorflow.python.keras.models import load_model
 
 from ir_image_classification.feature_extraction.keras.keras_dataset import marvel_dataframe
 import numpy as np
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from sklearn import metrics
 
@@ -70,18 +69,22 @@ def main():
 
     pred_ints = []
     label_ints = []
+
     for idx, (batch_data, batch_labels) in enumerate(test_generator):
         print(f"{idx}/{len(test_generator)}")
         azimuths = test_azimuths[idx * bs:idx * bs + bs]
+        if len(azimuths) == 0:
+            break
+        batch_data = batch_data[:len(azimuths)]
+        batch_labels = batch_labels[:len(azimuths)]
         output = model.predict(batch_data)
         int_labels = np.argmax(batch_labels, axis=1)
         int_preds = np.argmax(output, axis=1)
         pred_ints.extend(int_preds)
         label_ints.extend(int_labels)
 
-    pred_ints = np.array(pred_ints)
-    label_ints = np.array(label_ints)
-
+    pred_ints = np.asarray(pred_ints)
+    label_ints = np.asarray(label_ints)
     print(len(pred_ints))
     print(len(label_ints))
     print(len(test_azimuths))
@@ -118,6 +121,13 @@ def main():
     plt.ylabel('Average bin accuracy (%)')
     plt.xticks(rotation="vertical")
     plt.show()
+
+    exit()
+
+
+    # final_training_history = model.fit(train_generator, epochs=final_epochs, validation_data=test_generator)
+
+    # Create some final plots and save the model
 
 
 if __name__ == "__main__":
