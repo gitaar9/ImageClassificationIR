@@ -1,99 +1,18 @@
+import math
 import os
 
-from sklearn import svm, metrics
 import matplotlib.pyplot as plt
-from ir_image_classification.data_visualization.util import get_random_permutation, marvel_int_label_to_string
-from ir_image_classification.feature_extraction.pytorch.resnet_feature_extractor import save_features_as_npy_files
-from ir_image_classification.svm_classification.svm_optimization import load_dataset
-from sklearn.metrics import plot_confusion_matrix
-from joblib import dump
 import numpy as np
-import math
+from sklearn import metrics
 
-# OLD LOAD DATAPART DONT THROW AWAY!!
-# dataset_name = "resnet50_224px"
-# dataset_name = "MARVEL_keras_ResNet152_224px"
+from ir_image_classification.data_visualization.util import marvel_int_label_to_string
+from ir_image_classification.svm_classification.svm_optimization import load_dataset
 
-test_azimuth = []
-with open('/home/gitaar9/AI/TNO/StarMap/tools/other_view_angles.txt', 'r') as f:
-    for l in f.readlines():
-        name, a, e, t = l.strip().split(',')
-        test_azimuth.append(float(a))
-test_azimuth = np.asarray(test_azimuth)
-mask = np.where(test_azimuth != 90)
 
-dataset_name = "MARVEL_side_other_view_keras_ResNet152_224px"
-# dataset_name = "MARVEL_keras_ResNet152_224px"
-# dataset_name = "Resnet_and_Pix2Vox_combined_normalized"
-dataset_path = '/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets'
-dataset_path = os.path.join(dataset_path, dataset_name)
-name = ""
-pca_dimensions = None
-normalize = False
-
-# name = "side_other_view_early_newds_256_ft_300_"
-# dataset_path = '/home/gitaar9/AI/TNO/Pix2VoxPP/extracted_datasets'
-# pca_dimensions = 2048
-# normalize = False
-#
-X_train, y_train, X_test, y_test = load_dataset(
-    dataset_path,
-    normalize=normalize,
-    name=name,
-    nr_selected_feature_with_pca=pca_dimensions
-)
-print(X_train.shape)
-print(X_test.shape)
-
-# Int labels to string
-# Add one for resnet since im stupid
-# y_train += 1
-# y_test += 1
-y_train = np.array(list(map(marvel_int_label_to_string, y_train)))
-y_test = np.array(list(map(marvel_int_label_to_string, y_test)))
-
-print(test_azimuth.shape)
-print(y_test.shape)
-print(X_test.shape)
-
-test_azimuth = test_azimuth[mask]
-y_test = y_test[mask]
-X_test = X_test[mask]
-
-print(test_azimuth.shape)
-print(y_test.shape)
-print(X_test.shape)
-
-# Create a svm Classifier
-# clf = svm.SVC(
-#     C=1000,
-#     degree=0,
-#     gamma=1e-05,
-#     kernel='rbf',
-#     max_iter=100000,
-#     verbose=1
-# )
-clf = svm.SVC(
-    C=0.001,
-    degree=2,
-    gamma=0.1,
-    kernel='poly',
-    max_iter=10000,#100000,
-    verbose=1
-)
-# Train the model using the training set
-clf.fit(X_train, y_train)
-
-# Validation accuracy
-pred_test = clf.predict(X_test)
-validation_accuracy = metrics.accuracy_score(y_test, pred_test)
-print("Validation Accuracy:", validation_accuracy)
-# plot_confusion_matrix(clf, X_test, y_test, normalize='true', xticks_rotation='vertical', values_format='.2f', cmap='hot')
-# plt.title("Validation accuracy: {:.2f}".format(validation_accuracy))
-# plt.show()
-
-# load azimuth calculated using starmap
 def create_slices(limits=None, amount_of_slices=8, verbose=False):
+    """
+    This function return a list of pairs, for which each pair indicates the start and end value of the slice
+    """
     limits = limits or (-math.pi, math.pi)
     slices = []
     slice_size = abs(limits[0] - limits[1]) / amount_of_slices
@@ -105,56 +24,128 @@ def create_slices(limits=None, amount_of_slices=8, verbose=False):
     return slices
 
 
-slices = create_slices(amount_of_slices=40)
-slice_accs = []
-xs = []
-for slice_start, slice_end in slices:
-    x = math.degrees((slice_start + slice_end) / 2)
-    xs.append(x)
-    mask = np.where((slice_start <= test_azimuth) & (test_azimuth < slice_end))
-    slice_pred = pred_test[mask]
-    slice_gt = y_test[mask]
-    slice_acc = metrics.accuracy_score(slice_gt, slice_pred) * 100
-    slice_accs.append(slice_acc)
-    print(int(x), slice_acc)
-plt.bar(["%.0f" % x for x in xs], slice_accs)
-plt.title('Average accuracy: {:.2f}'.format(validation_accuracy))
-plt.xlabel('Average bin azimuth in degrees')
-plt.ylabel('Average bin accuracy (%)')
-plt.xticks(rotation="vertical")
-plt.show()
+def sample_based_on_azimuth(X_train, y_train, a_train):
+    slices = create_slices(amount_of_slices=40)
+    slice_idxs = []
+    for slice_start, slice_end in slices:
+        mask_idxs = np.where((slice_start <= a_train) & (a_train < slice_end) & (a_train != 90))[0]
+        slice_idxs.append(mask_idxs)
+    desired_slice_size = max(list(map(len, slice_idxs)))
 
-# print(test_azimuth.shape)
-# print(X_test.shape)
-# correct = (pred_test == y_test).astype(float)
-# print(correct.shape)
-# plt.scatter(test_azimuth, correct)
-# plt.show()
+    sample_idxs = list(range(len(X_train)))
+    for idxs in slice_idxs:
+        amount_to_sample = desired_slice_size - len(idxs)
+        sample_idxs.extend(np.random.choice(idxs, amount_to_sample))
 
-# Train accuracy
-# pred_train = clf.predict(X_train)
-# print("Train Accuracy:", metrics.accuracy_score(y_train, pred_train))
-#
-# name = "trained_on_newds_256_ft_not_normalized"
-# dump(
-#     clf,
-#     f'/home/gitaar9/TNO_Thesis/ImageClassificationIR/ir_image_classification/svm_classification/trained_svms/{name}'
-# )
+    return X_train[sample_idxs], y_train[sample_idxs]
 
-#### Bullshit finetuned Pix2Vox++ results:
-# For 5000 samples:
-# Validation Accuracy: 0.15665739614114374
-# Train Accuracy: 0.9718
-# For 3000 samples with max_iter:
-# [LibSVM]Validation Accuracy: 0.17056318442551713
-# Train Accuracy: 0.9873333333333333
 
-# For 10000 samples:
-# [LibSVM]Validation Accuracy: 0.1760820441508778
-# Train Accuracy: 0.9409
-# For 10000 samples with max_iter:
-# LibSVM]Validation Accuracy: 0.1759516773857118
-# Train Accuracy: 0.9408
+def load_azimuths(path):
+    azimuths = []
+    with open(path, 'r') as f:
+        for l in f.readlines():
+            name, a, e, t = l.strip().split(',')
+            azimuths.append(float(a))
+    azimuths = np.asarray(azimuths)
+    mask = np.where(azimuths != 90)
+    return azimuths, mask
 
-# For MARVEL_side_other_view_keras_ResNet152_224px
-# The best accuracy was 74.53% using: {'C': 0.001, 'degree': 2, 'gamma': 0.1, 'kernel': 'poly', 'max_iter': 100000}
+
+def main():
+    # dataset_name = "MARVEL_side_other_view_keras_ResNet152_224px"
+    dataset_name = "MARVEL_keras_ResNet152_224px"
+    dataset_path = '/home/gitaar9/TNO_Thesis/ImageClassificationIR/datasets/extracted_datasets'
+    dataset_path = os.path.join(dataset_path, dataset_name)
+
+    X_train, y_train, X_test, y_test = load_dataset(
+        dataset_path,
+        normalize=False,
+        name="",
+        nr_selected_feature_with_pca=None
+    )
+    print(X_train.shape)
+    print(X_test.shape)
+
+    # Int labels to string
+    # Add one for resnet since im stupid, removed these lines...
+    y_train = np.array(list(map(marvel_int_label_to_string, y_train)))
+    y_test = np.array(list(map(marvel_int_label_to_string, y_test)))
+
+
+    # Azimuth stuff
+    test_azimuth, test_azimuth_mask = load_azimuths('/home/gitaar9/AI/TNO/StarMap/tools/test_images_angles.txt')
+    train_azimuth, train_azimuth_mask = load_azimuths('/home/gitaar9/AI/TNO/StarMap/tools/train_images_angles.txt')
+    print(f"Train azimuths shape: {len(train_azimuth)}")
+
+
+    # Train sampling based on azimuth
+    X_train, y_train = sample_based_on_azimuth(X_train, y_train, train_azimuth)
+    print(X_train.shape)
+    exit()
+
+    # filtering out the tests with good azimuth estimation
+    print(test_azimuth.shape)
+    print(y_test.shape)
+    print(X_test.shape)
+
+    test_azimuth = test_azimuth[test_azimuth_mask]
+    y_test = y_test[test_azimuth_mask]
+    X_test = X_test[test_azimuth_mask]
+
+    print(test_azimuth.shape)
+    print(y_test.shape)
+    print(X_test.shape)
+
+    # Create a svm Classifier
+    # clf = svm.SVC(
+    #     C=1000,
+    #     degree=0,
+    #     gamma=1e-05,
+    #     kernel='rbf',
+    #     max_iter=100000,
+    #     verbose=1
+    # )
+    # clf = svm.SVC(
+    #     C=0.001,
+    #     degree=2,
+    #     gamma=0.1,
+    #     kernel='poly',
+    #     max_iter=1000,#100000,
+    #     verbose=1
+    # )
+    # # Train the model using the training set
+    # clf.fit(X_train, y_train)
+
+    from sklearn.svm import LinearSVC
+    clf = LinearSVC(C=0.001, random_state=0, tol=1e-5, max_iter=1000)
+    clf.fit(X_train, y_train)
+
+    # Validation accuracy
+    pred_test = clf.predict(X_test)
+    validation_accuracy = metrics.accuracy_score(y_test, pred_test)
+    print("Validation Accuracy:", validation_accuracy)
+
+
+    # Create a azimuth bin  accuracy plot:
+    slices = create_slices(amount_of_slices=40)
+    slice_accs = []
+    xs = []
+    for slice_start, slice_end in slices:
+        x = math.degrees((slice_start + slice_end) / 2)
+        xs.append(x)
+        mask = np.where((slice_start <= test_azimuth) & (test_azimuth < slice_end))
+        slice_pred = pred_test[mask]
+        slice_gt = y_test[mask]
+        slice_acc = metrics.accuracy_score(slice_gt, slice_pred) * 100
+        slice_accs.append(slice_acc)
+        print(int(x), slice_acc)
+    plt.bar(["%.0f" % x for x in xs], slice_accs)
+    plt.title('Average accuracy: {:.2f}'.format(validation_accuracy))
+    plt.xlabel('Average bin azimuth in degrees')
+    plt.ylabel('Average bin accuracy (%)')
+    plt.xticks(rotation="vertical")
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()
