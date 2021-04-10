@@ -8,6 +8,7 @@ from sklearn import svm
 from sklearn.decomposition import PCA
 from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.svm import LinearSVC
 
 from ir_image_classification.data_visualization.util import get_random_permutation
 
@@ -44,13 +45,21 @@ def load_dataset(dataset_path, normalize=False, name="", subset_size=None, nr_se
 
 
 def svc_grid_search(X, y, nfolds=3, n_jobs=5, cv=None, verbose=False):
+    # param_grid = {
+    #     'C': list(np.logspace(-5, 3, 5)),
+    #     'gamma': list(np.logspace(-5, 3, 5)),
+    #     'degree': [0, 1, 2],
+    #     'kernel': ["rbf", "poly", "linear"],
+    #     'max_iter': [1000]
+    # }
     param_grid = {
-        'C': list(np.logspace(-5, 3, 5)),
-        'gamma': list(np.logspace(-5, 3, 5)),
-        'degree': [0, 1, 2],
-        'kernel': ["rbf", "poly", "linear"],
-        'max_iter': [1000]
+        'C': list(np.logspace(-5, 3, 9)),
+        'max_iter': [1000],
+        'dual': [True, False],
+        'loss': ['hinge', 'squared_hinge'],
+        'tol': [1e-5, 1e-4, 1e-3]
     }
+
     if verbose:
         print("Performing grid search with the following parameters:\n")
         pp = pprint.PrettyPrinter(indent=4)
@@ -59,7 +68,7 @@ def svc_grid_search(X, y, nfolds=3, n_jobs=5, cv=None, verbose=False):
     if cv is None:
         cv = StratifiedShuffleSplit(n_splits=nfolds, test_size=0.2, random_state=42)
     print(f"Using {n_jobs} workers.")
-    grid_search = GridSearchCV(svm.SVC(), param_grid, cv=cv, n_jobs=n_jobs, verbose=1)
+    grid_search = GridSearchCV(LinearSVC(), param_grid, cv=cv, n_jobs=n_jobs, verbose=1)
     grid_search.fit(X, y)
 
     if verbose:
