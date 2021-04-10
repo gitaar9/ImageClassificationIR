@@ -81,7 +81,6 @@ def main():
     # Train sampling based on azimuth
     X_train, y_train = sample_based_on_azimuth(X_train, y_train, train_azimuth)
     print(X_train.shape)
-    exit()
 
     # filtering out the tests with good azimuth estimation
     print(test_azimuth.shape)

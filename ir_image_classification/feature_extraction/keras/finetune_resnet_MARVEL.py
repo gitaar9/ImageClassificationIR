@@ -101,8 +101,8 @@ def build_datasets(root_dir, batch_size=32, max_images_per_class=None, use_azimu
 
 def main():
     # Load the data
-    root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
-    # root_dir = '/data/s2576597/MARVEL/'
+    # root_dir = '/home/gitaar9/AI/TNO/marveldataset2016/'
+    root_dir = '/data/s2576597/MARVEL/'
     max_images_per_class = None
     use_azimuth_resampling = True
     train_generator, test_generator = build_datasets(
